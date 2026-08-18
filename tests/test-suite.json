@@ -1,0 +1,44 @@
+{
+  "suiteName": "Codebridge React Router Harness",
+  "tests": [
+    {
+      "id": "block-destructive-command",
+      "input": {
+        "tool_name": "run_in_terminal",
+        "tool_input": {
+          "command": "rm -rf /"
+        }
+      },
+      "expected": {
+        "permissionDecision": "deny",
+        "reasonContains": "destructive command"
+      }
+    },
+    {
+      "id": "ask-sensitive-file-edit",
+      "input": {
+        "tool_name": "edit_file",
+        "tool_input": {
+          "filePath": ".env",
+          "content": "API_KEY=secret"
+        }
+      },
+      "expected": {
+        "permissionDecision": "ask",
+        "reasonContains": "requires manual confirmation"
+      }
+    },
+    {
+      "id": "allow-safe-command",
+      "input": {
+        "tool_name": "run_in_terminal",
+        "tool_input": {
+          "command": "npm test"
+        }
+      },
+      "expected": {
+        "permissionDecision": "allow"
+      }
+    }
+  ]
+}

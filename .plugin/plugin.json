@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vscode/main/src/vs/workbench/contrib/chat/browser/schemas/hooks.schema.json",
+  "name": "codebridge-react-router-harness",
+  "version": "1.0.0",
+  "description": "Agent hook plugin that injects 1234 and validates unsafe tool calls.",
+  "hooks": [
+    {
+      "event": "agent.onSessionStart",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\.agents\\codebridge-react-router-harness\\com.example.client\\scripts\\emit-1234.ps1"
+      ],
+      "injectAsContext": true
+    },
+    {
+      "event": "tool.onPreExecute",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\.agents\\codebridge-react-router-harness\\com.example.client\\scripts\\validate-tool.ps1"
+      ]
+    }
+  ]
+}
