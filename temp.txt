@@ -1,0 +1,14 @@
+ "PreToolUse": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\validate-tool.ps1\"",
+        "timeout": 5
+      }
+    ],    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\validate-tool.ps1",
+        "cwd": ".",
+        "timeout": 5
+      }
+    ],

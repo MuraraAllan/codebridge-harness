@@ -2,7 +2,42 @@
   "suiteName": "Codebridge React Router Harness",
   "tests": [
     {
-      "id": "block-destructive-command",
+      "id": "inject-session-context",
+      "hookScript": "..\\scripts\\emit-1234.ps1",
+      "input": {
+        "hook_event_name": "SessionStart"
+      },
+      "expected": {
+        "hookEventName": "SessionStart",
+        "additionalContext": "1234"
+      }
+    },
+    {
+      "id": "notify-on-user-prompt",
+      "hookScript": "..\\scripts\\emit-1234.ps1",
+      "input": {
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "Run the hook harness."
+      },
+      "expected": {
+        "systemMessage": "1234"
+      }
+    },
+    {
+      "id": "request-error-report-after-failed-tool",
+      "hookScript": "..\\scripts\\report-tool-error.ps1",
+      "input": {
+        "hook_event_name": "PostToolUse",
+        "tool_name": "runTerminalCommand",
+        "tool_response": "Error: Access denied."
+      },
+      "expected": {
+        "hookEventName": "PostToolUse",
+        "additionalContext": "userIntervention tool error"
+      }
+    },
+    {
+      "id": "ask-before-destructive-command",
       "input": {
         "tool_name": "run_in_terminal",
         "tool_input": {
@@ -10,8 +45,8 @@
         }
       },
       "expected": {
-        "permissionDecision": "deny",
-        "reasonContains": "destructive command"
+        "permissionDecision": "ask",
+        "reasonContains": "requires manual confirmation"
       }
     },
     {
@@ -38,6 +73,34 @@
       },
       "expected": {
         "permissionDecision": "allow"
+      }
+    },
+    {
+      "id": "ask-before-vscode-destructive-command",
+      "input": {
+        "tool_name": "runTerminalCommand",
+        "tool_input": {
+          "command": "git push --force origin main"
+        }
+      },
+      "expected": {
+        "permissionDecision": "ask",
+        "reasonContains": "requires manual confirmation"
+      }
+    },
+    {
+      "id": "ask-vscode-sensitive-file-edit",
+      "input": {
+        "tool_name": "editFiles",
+        "tool_input": {
+          "files": [
+            "config\\prod.json"
+          ]
+        }
+      },
+      "expected": {
+        "permissionDecision": "ask",
+        "reasonContains": "requires manual confirmation"
       }
     }
   ]

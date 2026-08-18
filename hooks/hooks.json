@@ -1,16 +1,28 @@
 {
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.agents\\codebridge-react-router-harness\\com.example.client\\scripts\\emit-1234.ps1\""
-      }
-    ],
-    "PreToolUse": [
-      {
-        "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.agents\\codebridge-react-router-harness\\com.example.client\\scripts\\validate-tool.ps1\""
-      }
-    ]
-  }
+	"hooks": {
+		"SessionStart": [
+			{
+				"type": "command",
+				"command": "powershell.exe -NoProfile -File .\\scripts\\emit-1234.ps1",
+				"cwd": ".",
+				"timeout": 5
+			}
+		],
+		"UserPromptSubmit": [
+			{
+				"type": "command",
+				"command": "powershell.exe -NoProfile -File .\\scripts\\emit-1234.ps1",
+				"cwd": ".",
+				"timeout": 5
+			}
+		],
+		"PostToolUse": [
+			{
+				"type": "command",
+				"command": "powershell.exe -NoProfile -File .\\scripts\\report-tool-error.ps1",
+				"cwd": ".",
+				"timeout": 5
+			}
+		]
+	}
 }

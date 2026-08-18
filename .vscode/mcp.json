@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "codebridge-harness": {
+      "command": "powershell.exe",
+      "cwd": ".",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        ".\\scripts\\serve-harness-mcp.ps1"
+      ]
+    }
+  }
+}
