@@ -17,7 +17,7 @@ function Write-JsonRpcResponse {
 }
 
 function Invoke-Harness {
-    $harnessPath = Join-Path $PSScriptRoot "..\tests\run-harness.ps1"
+    $harnessPath = Join-Path $PSScriptRoot "..\..\tests\run-harness.ps1"
     $processInfo = New-Object System.Diagnostics.ProcessStartInfo
     $processInfo.FileName = "powershell.exe"
     $processInfo.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$harnessPath`""

@@ -2,9 +2,7 @@
   "name": "codebridge-harness",
   "version": "1.0.0",
   "description": "Workspace-local hook harness with MCP validation and error-classification tools.",
-  "skills": [
-    "skills/codebridge-react-router-harness/SKILL.md"
-  ],
+  "skills": [".agents/skills/codebridge-react-router-harness/SKILL.md"],
   "mcp": {
     "configuration": ".vscode/mcp.json",
     "server": "codebridge-harness",

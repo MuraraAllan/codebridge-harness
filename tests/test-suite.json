@@ -3,7 +3,7 @@
   "tests": [
     {
       "id": "inject-session-context",
-      "hookScript": "..\\scripts\\emit-1234.ps1",
+      "hookScript": "..\\scripts\\windows\\emit-1234.ps1",
       "input": {
         "hook_event_name": "SessionStart"
       },
@@ -14,7 +14,7 @@
     },
     {
       "id": "notify-on-user-prompt",
-      "hookScript": "..\\scripts\\emit-1234.ps1",
+      "hookScript": "..\\scripts\\windows\\emit-1234.ps1",
       "input": {
         "hook_event_name": "UserPromptSubmit",
         "prompt": "Run the hook harness."
@@ -25,7 +25,7 @@
     },
     {
       "id": "request-error-report-after-failed-tool",
-      "hookScript": "..\\scripts\\report-tool-error.ps1",
+      "hookScript": "..\\scripts\\windows\\report-tool-error.ps1",
       "input": {
         "hook_event_name": "PostToolUse",
         "tool_name": "runTerminalCommand",
@@ -93,9 +93,7 @@
       "input": {
         "tool_name": "editFiles",
         "tool_input": {
-          "files": [
-            "config\\prod.json"
-          ]
+          "files": ["config\\prod.json"]
         }
       },
       "expected": {

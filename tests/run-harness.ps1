@@ -9,7 +9,7 @@ if (-not $TestSuitePath) {
 }
 
 if (-not $HookScriptPath) {
-    $HookScriptPath = Join-Path $PSScriptRoot "..\scripts\validate-tool.ps1"
+    $HookScriptPath = Join-Path $PSScriptRoot "..\scripts\windows\validate-tool.ps1"
 }
 
 $suite = Get-Content -Raw -LiteralPath $TestSuitePath | ConvertFrom-Json

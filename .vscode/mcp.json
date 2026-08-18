@@ -8,7 +8,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        ".\\scripts\\serve-harness-mcp.ps1"
+        ".\\scripts\\windows\\serve-harness-mcp.ps1"
       ]
     }
   }

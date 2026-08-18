@@ -1,16 +1,23 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\windows\\validate-tool.ps1\"",
+        "timeout": 5
+      }
+    ],
     "SessionStart": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\emit-1234.ps1\"",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\windows\\emit-1234.ps1\"",
         "timeout": 5
       }
     ],
     "UserPromptSubmit": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\emit-1234.ps1\"",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\windows\\emit-1234.ps1\"",
         "timeout": 5
       }
     ],
@@ -18,7 +25,7 @@
     "PostToolUse": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\report-tool-error.ps1\"",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\scripts\\windows\\report-tool-error.ps1\"",
         "timeout": 5
       }
     ]
