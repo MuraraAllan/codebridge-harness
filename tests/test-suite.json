@@ -24,6 +24,28 @@
       }
     },
     {
+      "id": "inject-react-design-principle-context",
+      "hookScript": "..\\scripts\\windows\\inject-react-design-principle-context.ps1",
+      "input": {
+        "hook_event_name": "SessionStart"
+      },
+      "expected": {
+        "hookEventName": "SessionStart",
+        "additionalContext": "React design principle context is active"
+      }
+    },
+    {
+      "id": "inject-react-ux-principle-context",
+      "hookScript": "..\\scripts\\windows\\inject-react-ux-principle-context.ps1",
+      "input": {
+        "hook_event_name": "SessionStart"
+      },
+      "expected": {
+        "hookEventName": "SessionStart",
+        "additionalContext": "React UX principle context is active"
+      }
+    },
+    {
       "id": "notify-on-user-prompt",
       "hookScript": "..\\scripts\\windows\\emit-1234.ps1",
       "input": {

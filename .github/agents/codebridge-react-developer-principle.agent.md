@@ -5,11 +5,11 @@ user-invocable: false
 tools: [read, search]
 agents: []
 hooks:
-	SessionStart:
-		- type: command
+  SessionStart:
+    - type: command
       command: "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\inject-react-developer-principle-context.ps1"
-			cwd: "."
-			timeout: 5
+      cwd: "."
+      timeout: 5
 ---
 
 # Codebridge React Developer Principle

@@ -17,8 +17,11 @@ $sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
 $coordinatorAgentPath = Join-Path $workspaceRoot ".github\agents\react-router-harness.agent.md"
 $workerAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-harness.agent.md"
 $recursiveAgentPath = Join-Path $workspaceRoot ".github\agents\recursive-processor.agent.md"
-$developerPrincipleAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-react-developer-principle.agent.md"
-$developerPrincipleContextHookPath = Join-Path $workspaceRoot "scripts\windows\inject-react-developer-principle-context.ps1"
+$principleAgentHookPaths = @{
+    "codebridge-react-design-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-design-principle-context.ps1"
+    "codebridge-react-developer-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-developer-principle-context.ps1"
+    "codebridge-react-ux-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-ux-principle-context.ps1"
+}
 $principleAgentPaths = @(
     (Join-Path $workspaceRoot ".github\agents\codebridge-react-design-principle.agent.md"),
     (Join-Path $workspaceRoot ".github\agents\codebridge-react-developer-principle.agent.md"),
@@ -31,7 +34,7 @@ $principleSkillPaths = @(
     (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
 )
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $recursiveAgentPath, $workspaceSettingsPath, $developerPrincipleContextHookPath) + $principleSkillPaths + $principleAgentPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -81,9 +84,14 @@ foreach ($path in $principleAgentPaths) {
     }
 }
 
-$developerPrincipleAgent = Get-Content -Raw -LiteralPath $developerPrincipleAgentPath
-if ($developerPrincipleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?inject-react-developer-principle-context\.ps1") {
-    throw "Developer principle agent does not define its SessionStart context hook."
+foreach ($agentName in $principleAgentHookPaths.Keys) {
+    $principleAgentPath = $principleAgentPaths | Where-Object { $_ -match "$agentName\.agent\.md$" }
+    $principleAgent = Get-Content -Raw -LiteralPath $principleAgentPath
+    $hookFileName = [System.IO.Path]::GetFileName($principleAgentHookPaths[$agentName])
+
+    if ($principleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?$([regex]::Escape($hookFileName))") {
+        throw "Principle agent does not define its SessionStart context hook: $agentName"
+    }
 }
 
 $workspaceSettings = Get-Content -Raw -LiteralPath $workspaceSettingsPath | ConvertFrom-Json
@@ -192,7 +200,7 @@ try {
         arguments = @{}
     }
 
-    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 9 passed, 0 failed") {
+    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 11 passed, 0 failed") {
         throw "MCP run_harness tool did not run the hook harness successfully."
     }
 
