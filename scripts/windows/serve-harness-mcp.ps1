@@ -37,6 +37,16 @@ function Invoke-Harness {
     }
 }
 
+function Invoke-CommitContextChanges {
+    param(
+        [object]$Arguments
+    )
+
+    $scriptPath = Join-Path $PSScriptRoot "commit-context-changes.ps1"
+    $output = & $scriptPath -Summary ([string]$Arguments.summary) -L1 ([string]$Arguments.l1) -L2 ([string]$Arguments.l2) -L3 ([string]$Arguments.l3)
+    return ($output | Out-String).Trim()
+}
+
 function Get-ErrorCategory {
     param(
         [Parameter(Mandatory)]
@@ -117,6 +127,20 @@ while (($line = [Console]::In.ReadLine()) -ne $null) {
                                 additionalProperties = $false
                             }
                         }
+                        @{
+                            name = "commitContextChanges"
+                            description = "Create a draft commit message from ContextChanges data without running git commands."
+                            inputSchema = @{
+                                type = "object"
+                                properties = @{
+                                    summary = @{ type = "string" }
+                                    l1 = @{ type = "string" }
+                                    l2 = @{ type = "string" }
+                                    l3 = @{ type = "string" }
+                                }
+                                additionalProperties = $false
+                            }
+                        }
                     )
                 }
             }
@@ -150,6 +174,17 @@ while (($line = [Console]::In.ReadLine()) -ne $null) {
                             @{
                                 type = "text"
                                 text = $report
+                            }
+                        )
+                        isError = $false
+                    }
+                } elseif ($request.params.name -eq "commitContextChanges") {
+                    $draftJson = Invoke-CommitContextChanges -Arguments $request.params.arguments
+                    Write-JsonRpcResponse -Id $request.id -Result @{
+                        content = @(
+                            @{
+                                type = "text"
+                                text = $draftJson
                             }
                         )
                         isError = $false

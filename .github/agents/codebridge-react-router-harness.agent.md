@@ -19,6 +19,7 @@ agents:
   [
     react-router-harness,
     codebridge-harness,
+    commit-context-harness,
     codebridge-react-design-principle,
     codebridge-react-developer-principle,
     codebridge-react-ux-principle,
@@ -32,4 +33,4 @@ This is the first invocation in the Codebridge composition. Inspect the active f
 
 Use the workspace MCP tool to run the full hook harness after changing hook behavior. `PreToolUse` is enabled for this workspace. When evaluating risky actions, the validator must request confirmation with `ask`; it must not block the agent flow with `deny`.
 
-Delegate React concern analysis to the matching `codebridge-react-*-principle` agent. Use `recursive-processor` for more than four comparable independent subtasks. The explicit `agents` list is the allowed subagent set for this harness agent.
+Delegate React concern analysis to the matching `codebridge-react-*-principle` agent. Use `commit-context-harness` to draft commit messages from ContextChanges without invoking git. Use `recursive-processor` for more than four comparable independent subtasks. The explicit `agents` list is the allowed subagent set for this harness agent.

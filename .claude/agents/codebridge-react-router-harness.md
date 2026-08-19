@@ -18,4 +18,4 @@ tools:
 
 # Codebridge React Router Harness Agent
 
-Run the local harness after hook changes. Preserve the enabled `PreToolUse` registration and ensure risky operations receive an `ask` decision rather than a blocking `deny` decision. Use `errorReport` to classify tool failures before reporting them to the user.
+Run the local harness after hook changes. Preserve the enabled `PreToolUse` registration and ensure risky operations receive an `ask` decision rather than a blocking `deny` decision. Use `errorReport` to classify tool failures before reporting them to the user. Use `commitContextChanges` to draft commit messages from ContextChanges without invoking git.

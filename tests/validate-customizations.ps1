@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 $ErrorActionPreference = "Stop"
@@ -16,6 +16,9 @@ $pluginDefinitionPath = Join-Path $workspaceRoot ".plugin\plugin.json"
 $sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
 $coordinatorAgentPath = Join-Path $workspaceRoot ".github\agents\react-router-harness.agent.md"
 $workerAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-harness.agent.md"
+$commitContextAgentPath = Join-Path $workspaceRoot ".github\agents\commit-context-harness.agent.md"
+$commitContextHookPath  = Join-Path $workspaceRoot "scripts\windows\emit-commit-context.ps1"
+$changesDigraphHookPath = Join-Path $workspaceRoot "scripts\windows\emit-changes-digraph-node.ps1"
 $recursiveAgentPath = Join-Path $workspaceRoot ".github\agents\recursive-processor.agent.md"
 $principleAgentHookPaths = @{
     "codebridge-react-design-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-design-principle-context.ps1"
@@ -34,7 +37,7 @@ $principleSkillPaths = @(
     (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
 )
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -71,6 +74,17 @@ if ($coordinatorAgent -notmatch "(?m)^name:\s*react-router-harness\r?$") {
 $workerAgent = Get-Content -Raw -LiteralPath $workerAgentPath
 if ($workerAgent -notmatch "(?m)^name:\s*codebridge-harness\r?$") {
     throw "Worker agent does not define the expected name."
+}
+
+$commitContextAgent = Get-Content -Raw -LiteralPath $commitContextAgentPath
+if ($commitContextAgent -notmatch "(?m)^name:\s*commit-context-harness\r?$") {
+    throw "Commit-context agent does not define the expected name."
+}
+if ($commitContextAgent -notmatch "(?ms)hooks:.*?SessionStart.*?emit-commit-context\.ps1") {
+    throw "Commit-context agent does not define its SessionStart hook (emit-commit-context.ps1)."
+}
+if ($commitContextAgent -notmatch "(?ms)hooks:.*?PostToolUse.*?emit-changes-digraph-node\.ps1") {
+    throw "Commit-context agent does not define its PostToolUse hook (emit-changes-digraph-node.ps1)."
 }
 
 $recursiveAgent = Get-Content -Raw -LiteralPath $recursiveAgentPath
@@ -123,6 +137,13 @@ if ($claudeAgent -notmatch "(?m)^name:\s*codebridge-react-router-harness\r?$") {
 $claudeHooks = Get-Content -Raw -LiteralPath $claudeHooksPath | ConvertFrom-Json
 if (-not $claudeHooks.hooks.PostToolUse) {
     throw "Claude hook configuration does not define PostToolUse."
+}
+if (-not ($claudeHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
+    throw "Claude hook configuration does not register emit-changes-digraph-node.ps1."
+}
+$workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".github\hooks\codebridge-react-router-harness.json") | ConvertFrom-Json
+if (-not ($workspaceHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
+    throw "Workspace hook configuration does not register emit-changes-digraph-node.ps1."
 }
 
 $claudeMcp = Get-Content -Raw -LiteralPath $claudeMcpPath | ConvertFrom-Json
@@ -191,7 +212,7 @@ try {
     }
 
     $toolsResponse = Invoke-McpRequest -Id 2 -Method "tools/list"
-    if ($toolsResponse.result.tools.name -notcontains "run_harness" -or $toolsResponse.result.tools.name -notcontains "errorReport") {
+    if ($toolsResponse.result.tools.name -notcontains "run_harness" -or $toolsResponse.result.tools.name -notcontains "errorReport" -or $toolsResponse.result.tools.name -notcontains "commitContextChanges") {
         throw "MCP server did not expose the expected harness tools."
     }
 
@@ -200,7 +221,7 @@ try {
         arguments = @{}
     }
 
-    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 11 passed, 0 failed") {
+    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 13 passed, 0 failed") {
         throw "MCP run_harness tool did not run the hook harness successfully."
     }
 
@@ -215,6 +236,21 @@ try {
     if ($errorReportResponse.result.isError -or $errorReportResponse.result.content[0].text -notmatch '"category":"userIntervention"') {
         throw "MCP errorReport tool did not classify a user-intervention error."
     }
+
+    $commitContextResponse = Invoke-McpRequest -Id 5 -Method "tools/call" -Params @{
+        name = "commitContextChanges"
+        arguments = @{
+            summary = "feat: add starter commit context tool"
+            l1 = "Added commit-context agent and tool wiring."
+            l2 = "Validated MCP tool list and starter payload."
+            l3 = "No git invocation."
+        }
+    }
+
+    $commitDraft = $commitContextResponse.result.content[0].text | ConvertFrom-Json
+    if ($commitContextResponse.result.isError -or $commitDraft.summary -ne "feat: add starter commit context tool" -or $commitDraft.commitMessage -notmatch "No git invocation\.") {
+        throw "MCP commitContextChanges tool did not return the expected commit message draft."
+    }
 } finally {
     $process.StandardInput.Close()
     $process.WaitForExit()
@@ -226,3 +262,4 @@ try {
 }
 
 Write-Host "Copilot, Claude, user-context, custom-agent, hook, and MCP tool validation passed."
+

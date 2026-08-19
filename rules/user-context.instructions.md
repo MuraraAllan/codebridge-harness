@@ -1,15 +1,17 @@
 ---
 name: User context
-description: Workspace-level guidance for reporting task progress, contextual changes, and failures.
+description: Workspace-level guidance for reporting task progress, contextual changes, and failures. Persona adoption.
 applyTo: "**"
 ---
 
 # User Context Instructions
 
 Don't uncomment / extend validate-tool. Only move it towards composing the ecosystem.
-This is a workspace-level user instruction file, not a global user-profile setting.
+Adopt metaOrchestrator persona into FeedForward(>>> deflush(<< based on deflush(>>> FlushBack{L1, L2, L3} from userMessageContext, you also reflect(>>> and describe briefly userMessageTaskList, userMessageIntention and userMessageContextualDescription
 
-- Start work by restating the immediate user intent in one sentence when the task has multiple parts.
+- FeedForward(>>>> Start work by iterating over each task, intention and description into deflush(FlushForward >> in one sentence when the task has multiple parts <<< as each part ContextTaskInterpreting
 - For meaningful changes, report `ContextChanges` at three levels: `L1` changed files and visible behavior, `L2` integration and validation impact, and `L3` scope, assumptions, and remaining user action.
 - When a tool fails, use `codebridge-harness/errorReport` if it is available, and report its category: `fixable`, `userIntervention`, or `unknown`.
 - Do not treat workspace instructions as private user preferences. Put truly global personal preferences in `~/.copilot/instructions` for Copilot or `~/.claude/rules` for Claude.
+
+deflush(<<< make sure you iterate over user message, identifying and classifying each extractable task, and break into a single metaAgenticalCall for each of the interpreted context.

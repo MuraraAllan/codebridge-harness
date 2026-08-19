@@ -1,138 +1,167 @@
-{
-  "suiteName": "Codebridge React Router Harness",
-  "tests": [
-    {
-      "id": "inject-session-context",
-      "hookScript": "..\\scripts\\windows\\emit-1234.ps1",
-      "input": {
-        "hook_event_name": "SessionStart"
-      },
-      "expected": {
-        "hookEventName": "SessionStart",
-        "additionalContext": "Codebridge composition"
-      }
-    },
-    {
-      "id": "inject-react-developer-principle-context",
-      "hookScript": "..\\scripts\\windows\\inject-react-developer-principle-context.ps1",
-      "input": {
-        "hook_event_name": "SessionStart"
-      },
-      "expected": {
-        "hookEventName": "SessionStart",
-        "additionalContext": "React developer principle context is active"
-      }
-    },
-    {
-      "id": "inject-react-design-principle-context",
-      "hookScript": "..\\scripts\\windows\\inject-react-design-principle-context.ps1",
-      "input": {
-        "hook_event_name": "SessionStart"
-      },
-      "expected": {
-        "hookEventName": "SessionStart",
-        "additionalContext": "React design principle context is active"
-      }
-    },
-    {
-      "id": "inject-react-ux-principle-context",
-      "hookScript": "..\\scripts\\windows\\inject-react-ux-principle-context.ps1",
-      "input": {
-        "hook_event_name": "SessionStart"
-      },
-      "expected": {
-        "hookEventName": "SessionStart",
-        "additionalContext": "React UX principle context is active"
-      }
-    },
-    {
-      "id": "notify-on-user-prompt",
-      "hookScript": "..\\scripts\\windows\\emit-1234.ps1",
-      "input": {
-        "hook_event_name": "UserPromptSubmit",
-        "prompt": "Run the hook harness."
-      },
-      "expected": {
-        "systemMessage": "Codebridge composition context is available."
-      }
-    },
-    {
-      "id": "request-error-report-after-failed-tool",
-      "hookScript": "..\\scripts\\windows\\report-tool-error.ps1",
-      "input": {
-        "hook_event_name": "PostToolUse",
-        "tool_name": "runTerminalCommand",
-        "tool_response": "Error: Access denied."
-      },
-      "expected": {
-        "hookEventName": "PostToolUse",
-        "additionalContext": "userIntervention tool error"
-      }
-    },
-    {
-      "id": "ask-before-destructive-command",
-      "input": {
-        "tool_name": "run_in_terminal",
-        "tool_input": {
-          "command": "rm -rf /"
-        }
-      },
-      "expected": {
-        "permissionDecision": "ask",
-        "reasonContains": "requires manual confirmation"
-      }
-    },
-    {
-      "id": "ask-sensitive-file-edit",
-      "input": {
-        "tool_name": "edit_file",
-        "tool_input": {
-          "filePath": ".env",
-          "content": "API_KEY=secret"
-        }
-      },
-      "expected": {
-        "permissionDecision": "ask",
-        "reasonContains": "requires manual confirmation"
-      }
-    },
-    {
-      "id": "allow-safe-command",
-      "input": {
-        "tool_name": "run_in_terminal",
-        "tool_input": {
-          "command": "npm test"
-        }
-      },
-      "expected": {
-        "permissionDecision": "allow"
-      }
-    },
-    {
-      "id": "ask-before-vscode-destructive-command",
-      "input": {
-        "tool_name": "runTerminalCommand",
-        "tool_input": {
-          "command": "git push --force origin main"
-        }
-      },
-      "expected": {
-        "permissionDecision": "ask",
-        "reasonContains": "requires manual confirmation"
-      }
-    },
-    {
-      "id": "ask-vscode-sensitive-file-edit",
-      "input": {
-        "tool_name": "editFiles",
-        "tool_input": {
-          "files": ["config\\prod.json"]
-        }
-      },
-      "expected": {
-        "permissionDecision": "ask",
-        "reasonContains": "requires manual confirmation"
-      }
-    }
-  ]
+﻿{
+    "suiteName":  "Codebridge React Router Harness",
+    "tests":  [
+                  {
+                      "id":  "inject-session-context",
+                      "hookScript":  "..\\scripts\\windows\\emit-1234.ps1",
+                      "input":  {
+                                    "hook_event_name":  "SessionStart"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "SessionStart",
+                                       "additionalContext":  "Codebridge composition"
+                                   }
+                  },
+                  {
+                      "id":  "inject-react-developer-principle-context",
+                      "hookScript":  "..\\scripts\\windows\\inject-react-developer-principle-context.ps1",
+                      "input":  {
+                                    "hook_event_name":  "SessionStart"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "SessionStart",
+                                       "additionalContext":  "React developer principle context is active"
+                                   }
+                  },
+                  {
+                      "id":  "inject-react-design-principle-context",
+                      "hookScript":  "..\\scripts\\windows\\inject-react-design-principle-context.ps1",
+                      "input":  {
+                                    "hook_event_name":  "SessionStart"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "SessionStart",
+                                       "additionalContext":  "React design principle context is active"
+                                   }
+                  },
+                  {
+                      "id":  "inject-react-ux-principle-context",
+                      "hookScript":  "..\\scripts\\windows\\inject-react-ux-principle-context.ps1",
+                      "input":  {
+                                    "hook_event_name":  "SessionStart"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "SessionStart",
+                                       "additionalContext":  "React UX principle context is active"
+                                   }
+                  },
+                  {
+                      "id":  "notify-on-user-prompt",
+                      "hookScript":  "..\\scripts\\windows\\emit-1234.ps1",
+                      "input":  {
+                                    "hook_event_name":  "UserPromptSubmit",
+                                    "prompt":  "Run the hook harness."
+                                },
+                      "expected":  {
+                                       "systemMessage":  "Codebridge composition context is available."
+                                   }
+                  },
+                  {
+                      "id":  "request-error-report-after-failed-tool",
+                      "hookScript":  "..\\scripts\\windows\\report-tool-error.ps1",
+                      "input":  {
+                                    "hook_event_name":  "PostToolUse",
+                                    "tool_name":  "runTerminalCommand",
+                                    "tool_response":  "Error: Access denied."
+                                },
+                      "expected":  {
+                                       "hookEventName":  "PostToolUse",
+                                       "additionalContext":  "userIntervention tool error"
+                                   }
+                  },
+                  {
+                      "id":  "ask-before-destructive-command",
+                      "input":  {
+                                    "tool_name":  "run_in_terminal",
+                                    "tool_input":  {
+                                                       "command":  "rm -rf /"
+                                                   }
+                                },
+                      "expected":  {
+                                       "permissionDecision":  "ask",
+                                       "reasonContains":  "requires manual confirmation"
+                                   }
+                  },
+                  {
+                      "id":  "ask-sensitive-file-edit",
+                      "input":  {
+                                    "tool_name":  "edit_file",
+                                    "tool_input":  {
+                                                       "filePath":  ".env",
+                                                       "content":  "API_KEY=secret"
+                                                   }
+                                },
+                      "expected":  {
+                                       "permissionDecision":  "ask",
+                                       "reasonContains":  "requires manual confirmation"
+                                   }
+                  },
+                  {
+                      "id":  "allow-safe-command",
+                      "input":  {
+                                    "tool_name":  "run_in_terminal",
+                                    "tool_input":  {
+                                                       "command":  "npm test"
+                                                   }
+                                },
+                      "expected":  {
+                                       "permissionDecision":  "allow"
+                                   }
+                  },
+                  {
+                      "id":  "ask-before-vscode-destructive-command",
+                      "input":  {
+                                    "tool_name":  "runTerminalCommand",
+                                    "tool_input":  {
+                                                       "command":  "git push --force origin main"
+                                                   }
+                                },
+                      "expected":  {
+                                       "permissionDecision":  "ask",
+                                       "reasonContains":  "requires manual confirmation"
+                                   }
+                  },
+                  {
+                      "id":  "ask-vscode-sensitive-file-edit",
+                      "input":  {
+                                    "tool_name":  "editFiles",
+                                    "tool_input":  {
+                                                       "files":  [
+                                                                     "config\\prod.json"
+                                                                 ]
+                                                   }
+                                },
+                      "expected":  {
+                                       "permissionDecision":  "ask",
+                                       "reasonContains":  "requires manual confirmation"
+                                   }
+                  },
+                  {
+                      "id":  "emit-commit-context-on-session-start",
+                      "hookScript":  "..\\scripts\\windows\\emit-commit-context.ps1",
+                      "input":  {
+                                    "hook_event_name":  "SessionStart"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "SessionStart",
+                                       "additionalContext":  "commit-context-harness is active"
+                                   }
+                  },
+                  {
+                      "id":  "emit-changes-digraph-node-on-post-tool-use",
+                      "hookScript":  "..\\scripts\\windows\\emit-changes-digraph-node.ps1",
+                      "input":  {
+                                    "hook_event_name":  "PostToolUse",
+                                    "tool_name":  "replace_string_in_file",
+                                    "tool_input":  {
+                                                       "filePath":  "emit-commit-context.ps1"
+                                                   },
+                                    "tool_response":  "Success"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "PostToolUse",
+                                       "additionalContext":  "commit-context-harness recorded changes-digraph node"
+                                   }
+                  }
+              ]
 }

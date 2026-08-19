@@ -9,6 +9,7 @@ flowchart LR
     U[User request] --> A[codebridge-react-router-harness]
     A --> R[react-router-harness coordinator]
     A --> H[codebridge-harness worker]
+    A --> CM[commit-context-harness]
     A --> P[React principle agents]
     A --> X[recursive-processor]
     X --> X
@@ -33,6 +34,7 @@ flowchart LR
 - `codebridge-react-design-principle` for design, accessibility, responsiveness, and performance.
 - `codebridge-react-developer-principle` for component architecture, composition, specialization, state, and abstractions.
 - `codebridge-react-ux-principle` for navigation, feedback, attention, and journeys.
+- `commit-context-harness` for drafting commit messages from ContextChanges data without invoking git.
 
 `recursive-processor` splits work only when there are more than four comparable, independent items. Nested subagent invocation is enabled through `.vscode/settings.json`.
 
