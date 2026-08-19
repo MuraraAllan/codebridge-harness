@@ -16,12 +16,12 @@ if ($hookEventName -eq "SessionStart") {
     @{
         hookSpecificOutput = @{
             hookEventName = "SessionStart"
-            additionalContext = "1234"
+            additionalContext = "Codebridge composition: select codebridge-react-design-principle for design and accessibility, codebridge-react-developer-principle for architecture and composition, codebridge-react-ux-principle for interaction and navigation; use recursive-processor for more than four comparable independent subtasks."
         }
     } | ConvertTo-Json -Depth 4 -Compress
     exit 0
 }
 
 @{
-    systemMessage = "1234"
+    systemMessage = "Codebridge composition context is available."
 } | ConvertTo-Json -Depth 4 -Compress

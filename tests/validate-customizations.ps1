@@ -16,13 +16,22 @@ $pluginDefinitionPath = Join-Path $workspaceRoot ".plugin\plugin.json"
 $sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
 $coordinatorAgentPath = Join-Path $workspaceRoot ".github\agents\react-router-harness.agent.md"
 $workerAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-harness.agent.md"
+$recursiveAgentPath = Join-Path $workspaceRoot ".github\agents\recursive-processor.agent.md"
+$developerPrincipleAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-react-developer-principle.agent.md"
+$developerPrincipleContextHookPath = Join-Path $workspaceRoot "scripts\windows\inject-react-developer-principle-context.ps1"
+$principleAgentPaths = @(
+    (Join-Path $workspaceRoot ".github\agents\codebridge-react-design-principle.agent.md"),
+    (Join-Path $workspaceRoot ".github\agents\codebridge-react-developer-principle.agent.md"),
+    (Join-Path $workspaceRoot ".github\agents\codebridge-react-ux-principle.agent.md")
+)
+$workspaceSettingsPath = Join-Path $workspaceRoot ".vscode\settings.json"
 $principleSkillPaths = @(
     (Join-Path $workspaceRoot ".agents\skills\react-design-principle\SKILL.md"),
     (Join-Path $workspaceRoot ".agents\skills\react-developer-principle\SKILL.md"),
     (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
 )
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath) + $principleSkillPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $recursiveAgentPath, $workspaceSettingsPath, $developerPrincipleContextHookPath) + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -42,6 +51,9 @@ $agent = Get-Content -Raw -LiteralPath $agentPath
 if ($agent -notmatch "(?m)^name:\s*codebridge-react-router-harness\r?$") {
     throw "Custom agent does not define the expected name."
 }
+if ($agent -notmatch "Primary entrypoint") {
+    throw "Custom agent does not identify itself as the primary entrypoint."
+}
 
 $sharedInstructions = Get-Content -Raw -LiteralPath $sharedInstructionsPath
 if ($sharedInstructions -notmatch "Codebridge Harness Composition") {
@@ -56,6 +68,27 @@ if ($coordinatorAgent -notmatch "(?m)^name:\s*react-router-harness\r?$") {
 $workerAgent = Get-Content -Raw -LiteralPath $workerAgentPath
 if ($workerAgent -notmatch "(?m)^name:\s*codebridge-harness\r?$") {
     throw "Worker agent does not define the expected name."
+}
+
+$recursiveAgent = Get-Content -Raw -LiteralPath $recursiveAgentPath
+if ($recursiveAgent -notmatch "(?m)^name:\s*recursive-processor\r?$") {
+    throw "Recursive processor does not define the expected name."
+}
+
+foreach ($path in $principleAgentPaths) {
+    if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*codebridge-react-.*-principle\r?$") {
+        throw "Principle agent does not define the expected name: $path"
+    }
+}
+
+$developerPrincipleAgent = Get-Content -Raw -LiteralPath $developerPrincipleAgentPath
+if ($developerPrincipleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?inject-react-developer-principle-context\.ps1") {
+    throw "Developer principle agent does not define its SessionStart context hook."
+}
+
+$workspaceSettings = Get-Content -Raw -LiteralPath $workspaceSettingsPath | ConvertFrom-Json
+if (-not $workspaceSettings.'chat.subagents.allowInvocationsFromSubagents') {
+    throw "Workspace settings do not enable recursive subagent invocation."
 }
 
 foreach ($path in $principleSkillPaths) {
@@ -159,7 +192,7 @@ try {
         arguments = @{}
     }
 
-    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 8 passed, 0 failed") {
+    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 9 passed, 0 failed") {
         throw "MCP run_harness tool did not run the hook harness successfully."
     }
 

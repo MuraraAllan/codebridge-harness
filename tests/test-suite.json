@@ -9,7 +9,18 @@
       },
       "expected": {
         "hookEventName": "SessionStart",
-        "additionalContext": "1234"
+        "additionalContext": "Codebridge composition"
+      }
+    },
+    {
+      "id": "inject-react-developer-principle-context",
+      "hookScript": "..\\scripts\\windows\\inject-react-developer-principle-context.ps1",
+      "input": {
+        "hook_event_name": "SessionStart"
+      },
+      "expected": {
+        "hookEventName": "SessionStart",
+        "additionalContext": "React developer principle context is active"
       }
     },
     {
@@ -20,7 +31,7 @@
         "prompt": "Run the hook harness."
       },
       "expected": {
-        "systemMessage": "1234"
+        "systemMessage": "Codebridge composition context is available."
       }
     },
     {

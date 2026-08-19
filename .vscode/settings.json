@@ -1,3 +1,4 @@
 {
-  "prettier.enableDebugLogs": true
+  "prettier.enableDebugLogs": true,
+  "chat.subagents.allowInvocationsFromSubagents": true
 }

@@ -2,9 +2,16 @@
 name: react-router-harness
 description: "Coordinate React Router work with the Codebridge hook harness. Use when a task spans React Router behavior and harness validation."
 tools: [read, search, edit, execute, agent, "codebridge-harness/*"]
-agents: [codebridge-harness]
+agents:
+	[
+		codebridge-harness,
+		codebridge-react-design-principle,
+		codebridge-react-developer-principle,
+		codebridge-react-ux-principle,
+		recursive-processor,
+	]
 ---
 
 # React Router Harness Coordinator
 
-Select the applicable React principle skill before implementing: design for visual and accessibility work, developer for component architecture, and UX for navigation or feedback work. Delegate hook, MCP, and PowerShell harness changes to `codebridge-harness`. Keep the coordinator focused on integration and verify the resulting behavior with the workspace harness.
+Delegate visual and accessibility analysis to `codebridge-react-design-principle`, architecture and composition analysis to `codebridge-react-developer-principle`, and interaction or navigation analysis to `codebridge-react-ux-principle`. Delegate hook, MCP, and PowerShell harness changes to `codebridge-harness`. Use `recursive-processor` for more than four comparable independent subtasks. Keep the coordinator focused on integration and verify the resulting behavior with the workspace harness.
