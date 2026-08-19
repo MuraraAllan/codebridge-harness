@@ -97,6 +97,15 @@ $recursiveAgent = Get-Content -Raw -LiteralPath $recursiveAgentPath
 if ($recursiveAgent -notmatch "(?m)^name:\s*recursive-processor\r?$") {
     throw "Recursive processor does not define the expected name."
 }
+if ($recursiveAgent -notmatch "deflusherDocRead" -or $recursiveAgent -notmatch "docReadPlan" -or $recursiveAgent -notmatch "FeedForward") {
+    throw "Recursive processor does not define the deflusherDocRead FeedForward contract."
+}
+
+$copilotRecursiveAgentPath = Join-Path $workspaceRoot "com.github.copilot\agents\recursive-processor.agent.md"
+$copilotRecursiveAgent = Get-Content -Raw -LiteralPath $copilotRecursiveAgentPath
+if ($copilotRecursiveAgent -notmatch "deflusherDocRead" -or $copilotRecursiveAgent -notmatch "docReadPlan" -or $copilotRecursiveAgent -notmatch "FeedForward") {
+    throw "Copilot recursive processor adapter does not define the deflusherDocRead FeedForward contract."
+}
 
 foreach ($path in $principleAgentPaths) {
     if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*codebridge-react-.*-principle\r?$") {

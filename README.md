@@ -36,7 +36,7 @@ flowchart LR
 - `codebridge-react-ux-principle` for navigation, feedback, attention, and journeys.
 - `commit-context-harness` for drafting commit messages from ContextChanges data without invoking git.
 
-`recursive-processor` splits work only when there are more than four comparable, independent items. Nested subagent invocation is enabled through `.vscode/settings.json`.
+`recursive-processor` acts as the `deflusherDocRead` pre-processor: before broad source reads, repository scans, or web searches, it converts the user message into taskList, intention, contextualDescription, and a minimal docReadPlan. It still splits work recursively when there are more than four comparable, independent items. Nested subagent invocation is enabled through `.vscode/settings.json`.
 
 The `SessionStart` hook injects this routing orientation into every session. The hook harness verifies that injection together with the pre-tool permission decisions and post-tool error-report context.
 
