@@ -44,6 +44,7 @@ The `SessionStart` hook injects this routing orientation into every session. The
 
 The repository is now shaped around a single canonical Agent Plugins 1.0 package:
 
+- `.codex-plugin/plugin.json` is the Codex and ChatGPT plugin manifest.
 - `plugin.json` is the portable root manifest for clients that support Agent Plugins 1.0.
 - `mcp.json` is the portable MCP server definition for the shared `codebridge-harness` server.
 - `skills/` contains portable skill packages discovered by compatible clients.
@@ -52,6 +53,26 @@ The repository is now shaped around a single canonical Agent Plugins 1.0 package
 - `.plugin/plugin.json` is retained as a legacy OpenPlugin-style adapter.
 
 The package should be imported from the repository root. Workspace-only files such as `.vscode/mcp.json`, `.claude/settings.json`, `rules/`, `agents/`, and `.hooks/` remain useful while developing this repo locally, but the root plugin files are the import surface.
+
+For Codex, the required entrypoint is `.codex-plugin/plugin.json`. The manifest points to the shared `skills/` folder and declares the `codebridge-harness` MCP server with `PLUGIN_ROOT`, so the installed plugin can start the same PowerShell server from its cache path. The default Codex hook path is `hooks/hooks.json`, which remains present at the plugin root.
+
+A Git-backed marketplace entry can point directly at this repository root:
+
+```json
+{
+  "name": "codebridge-react-router-harness",
+  "source": {
+    "source": "url",
+    "url": "https://github.com/muraraallan/codebdrige-react-router-harness.git",
+    "ref": "main"
+  },
+  "policy": {
+    "installation": "AVAILABLE",
+    "authentication": "ON_INSTALL"
+  },
+  "category": "Productivity"
+}
+```
 
 ## Validation
 

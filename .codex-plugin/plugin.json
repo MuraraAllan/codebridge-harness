@@ -1,0 +1,53 @@
+{
+  "name": "codebridge-react-router-harness",
+  "version": "1.0.0",
+  "description": "React Router harness tools, skills, hooks, and agent customizations for Codebridge workflows.",
+  "author": {
+    "name": "LabX"
+  },
+  "homepage": "https://labx.dev.br",
+  "repository": "https://github.com/muraraallan/codebdrige-react-router-harness",
+  "license": "MIT",
+  "keywords": [
+    "react-router",
+    "harness",
+    "codex",
+    "mcp",
+    "hooks"
+  ],
+  "skills": "./skills/",
+  "mcpServers": {
+    "codebridge-harness": {
+      "type": "stdio",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
+      ],
+      "cwd": "${PLUGIN_ROOT}"
+    }
+  },
+  "interface": {
+    "displayName": "Codebridge React Router Harness",
+    "shortDescription": "Run React Router harness checks in Codex.",
+    "longDescription": "Use Codebridge React Router harness skills, hooks, and MCP tools to validate agent-hook behavior and compose React workflow agents.",
+    "developerName": "LabX",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "MCP",
+      "Hooks"
+    ],
+    "websiteURL": "https://labx.dev.br",
+    "defaultPrompt": [
+      "Run the Codebridge harness.",
+      "Validate the plugin import surface.",
+      "Draft ContextChanges for this work."
+    ],
+    "brandColor": "#10A37F"
+  }
+}

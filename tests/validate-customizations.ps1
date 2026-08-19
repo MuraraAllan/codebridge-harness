@@ -7,6 +7,7 @@ $instructionsPath = Join-Path $workspaceRoot "rules\copilot-instructions.md"
 $userInstructionsPath = Join-Path $workspaceRoot "rules\user-context.instructions.md"
 $agentPath = Join-Path $workspaceRoot "agents\codebridge-react-router-harness.agent.md"
 $mcpConfigPath = Join-Path $workspaceRoot ".vscode\mcp.json"
+$codexPluginManifestPath = Join-Path $workspaceRoot ".codex-plugin\plugin.json"
 $agentPluginManifestPath = Join-Path $workspaceRoot "plugin.json"
 $agentPluginMcpPath = Join-Path $workspaceRoot "mcp.json"
 $mcpServerPath = Join-Path $workspaceRoot "scripts\windows\serve-harness-mcp.ps1"
@@ -43,7 +44,7 @@ $principleSkillPaths = @(
     (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
 )
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $codexPluginManifestPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -137,6 +138,20 @@ foreach ($path in $principleSkillPaths) {
 $mcpConfig = Get-Content -Raw -LiteralPath $mcpConfigPath | ConvertFrom-Json
 if (-not $mcpConfig.servers.'codebridge-harness') {
     throw "MCP configuration does not define the codebridge-harness server."
+}
+
+$codexPluginManifest = Get-Content -Raw -LiteralPath $codexPluginManifestPath | ConvertFrom-Json
+if ($codexPluginManifest.name -ne "codebridge-react-router-harness" -or $codexPluginManifest.skills -ne "./skills/") {
+    throw "Codex plugin manifest does not define the expected name and skills path."
+}
+if (-not $codexPluginManifest.mcpServers.'codebridge-harness') {
+    throw "Codex plugin manifest does not define the codebridge-harness MCP server."
+}
+if ($codexPluginManifest.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
+    throw "Codex plugin manifest does not use PLUGIN_ROOT for the bundled MCP server."
+}
+if (-not $codexPluginManifest.interface.displayName -or -not $codexPluginManifest.interface.defaultPrompt) {
+    throw "Codex plugin manifest does not define install-surface metadata."
 }
 
 $agentPluginManifest = Get-Content -Raw -LiteralPath $agentPluginManifestPath | ConvertFrom-Json
