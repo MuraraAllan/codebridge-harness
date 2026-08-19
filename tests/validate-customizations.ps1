@@ -3,32 +3,38 @@ param()
 
 $ErrorActionPreference = "Stop"
 $workspaceRoot = Split-Path -Parent $PSScriptRoot
-$instructionsPath = Join-Path $workspaceRoot ".github\copilot-instructions.md"
-$userInstructionsPath = Join-Path $workspaceRoot ".github\instructions\user-context.instructions.md"
-$agentPath = Join-Path $workspaceRoot ".github\agents\codebridge-react-router-harness.agent.md"
+$instructionsPath = Join-Path $workspaceRoot "rules\copilot-instructions.md"
+$userInstructionsPath = Join-Path $workspaceRoot "rules\user-context.instructions.md"
+$agentPath = Join-Path $workspaceRoot "agents\codebridge-react-router-harness.agent.md"
 $mcpConfigPath = Join-Path $workspaceRoot ".vscode\mcp.json"
+$agentPluginManifestPath = Join-Path $workspaceRoot "plugin.json"
+$agentPluginMcpPath = Join-Path $workspaceRoot "mcp.json"
 $mcpServerPath = Join-Path $workspaceRoot "scripts\windows\serve-harness-mcp.ps1"
 $claudeInstructionsPath = Join-Path $workspaceRoot ".claude\CLAUDE.md"
 $claudeAgentPath = Join-Path $workspaceRoot ".claude\agents\codebridge-react-router-harness.md"
 $claudeHooksPath = Join-Path $workspaceRoot ".claude\settings.json"
+$claudePluginManifestPath = Join-Path $workspaceRoot ".claude-plugin\plugin.json"
+$pluginHooksPath = Join-Path $workspaceRoot "hooks\hooks.json"
+$copilotExtensionHooksPath = Join-Path $workspaceRoot "com.github.copilot\hooks\hooks.json"
+$copilotExtensionRulesPath = Join-Path $workspaceRoot "com.github.copilot\rules\copilot-instructions.md"
 $claudeMcpPath = Join-Path $workspaceRoot ".mcp.json"
 $pluginDefinitionPath = Join-Path $workspaceRoot ".plugin\plugin.json"
 $sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
-$coordinatorAgentPath = Join-Path $workspaceRoot ".github\agents\react-router-harness.agent.md"
-$workerAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-harness.agent.md"
-$commitContextAgentPath = Join-Path $workspaceRoot ".github\agents\commit-context-harness.agent.md"
+$coordinatorAgentPath = Join-Path $workspaceRoot "agents\react-router-harness.agent.md"
+$workerAgentPath = Join-Path $workspaceRoot "agents\codebridge-harness.agent.md"
+$commitContextAgentPath = Join-Path $workspaceRoot "agents\commit-context-harness.agent.md"
 $commitContextHookPath  = Join-Path $workspaceRoot "scripts\windows\emit-commit-context.ps1"
 $changesDigraphHookPath = Join-Path $workspaceRoot "scripts\windows\emit-changes-digraph-node.ps1"
-$recursiveAgentPath = Join-Path $workspaceRoot ".github\agents\recursive-processor.agent.md"
+$recursiveAgentPath = Join-Path $workspaceRoot "agents\recursive-processor.agent.md"
 $principleAgentHookPaths = @{
     "codebridge-react-design-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-design-principle-context.ps1"
     "codebridge-react-developer-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-developer-principle-context.ps1"
     "codebridge-react-ux-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-ux-principle-context.ps1"
 }
 $principleAgentPaths = @(
-    (Join-Path $workspaceRoot ".github\agents\codebridge-react-design-principle.agent.md"),
-    (Join-Path $workspaceRoot ".github\agents\codebridge-react-developer-principle.agent.md"),
-    (Join-Path $workspaceRoot ".github\agents\codebridge-react-ux-principle.agent.md")
+    (Join-Path $workspaceRoot "agents\codebridge-react-design-principle.agent.md"),
+    (Join-Path $workspaceRoot "agents\codebridge-react-developer-principle.agent.md"),
+    (Join-Path $workspaceRoot "agents\codebridge-react-ux-principle.agent.md")
 )
 $workspaceSettingsPath = Join-Path $workspaceRoot ".vscode\settings.json"
 $principleSkillPaths = @(
@@ -37,7 +43,7 @@ $principleSkillPaths = @(
     (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
 )
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -124,6 +130,22 @@ if (-not $mcpConfig.servers.'codebridge-harness') {
     throw "MCP configuration does not define the codebridge-harness server."
 }
 
+$agentPluginManifest = Get-Content -Raw -LiteralPath $agentPluginManifestPath | ConvertFrom-Json
+if ($agentPluginManifest.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" -or $agentPluginManifest.name -ne "codebridge-react-router-harness") {
+    throw "Agent Plugins manifest does not define the expected schema and name."
+}
+if (-not $agentPluginManifest.extensions.'com.github.copilot') {
+    throw "Agent Plugins manifest does not declare the Copilot extension namespace."
+}
+
+$agentPluginMcp = Get-Content -Raw -LiteralPath $agentPluginMcpPath | ConvertFrom-Json
+if ($agentPluginMcp.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json" -or $agentPluginMcp.mcpServers.'codebridge-harness'.type -ne "stdio") {
+    throw "Portable MCP configuration does not define the expected stdio codebridge-harness server."
+}
+if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
+    throw "Portable MCP configuration does not reference the plugin-root MCP server script."
+}
+
 $claudeInstructions = Get-Content -Raw -LiteralPath $claudeInstructionsPath
 if ($claudeInstructions -notmatch "Claude Instructions") {
     throw "Claude instructions do not contain the expected heading."
@@ -141,7 +163,7 @@ if (-not $claudeHooks.hooks.PostToolUse) {
 if (-not ($claudeHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
     throw "Claude hook configuration does not register emit-changes-digraph-node.ps1."
 }
-$workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".github\hooks\codebridge-react-router-harness.json") | ConvertFrom-Json
+$workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-react-router-harness.json") | ConvertFrom-Json
 if (-not ($workspaceHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
     throw "Workspace hook configuration does not register emit-changes-digraph-node.ps1."
 }
@@ -152,7 +174,7 @@ if (-not $claudeMcp.mcpServers.'codebridge-harness') {
 }
 
 $pluginDefinition = Get-Content -Raw -LiteralPath $pluginDefinitionPath | ConvertFrom-Json
-if ($pluginDefinition.name -ne "codebridge-harness" -or $pluginDefinition.mcp.server -ne "codebridge-harness" -or $pluginDefinition.mcp.tool -ne "run_harness") {
+if ($pluginDefinition.name -ne "codebridge-react-router-harness" -or $pluginDefinition.mcp.server -ne "codebridge-harness" -or $pluginDefinition.mcp.tool -ne "run_harness") {
     throw "Plugin definition does not identify the codebridge-harness MCP tool."
 }
 
@@ -160,8 +182,18 @@ if ($pluginDefinition.skills -notcontains ".agents/skills/react-principles/SKILL
     throw "Plugin definition does not register the React principle skill index."
 }
 
-if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".github\hooks\codebridge-react-router-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
+if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-react-router-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
     throw "PreToolUse must be enabled in both repository hook configurations."
+}
+
+$pluginHooks = Get-Content -Raw -LiteralPath $pluginHooksPath | ConvertFrom-Json
+if (-not $pluginHooks.hooks.PreToolUse -or -not ($pluginHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{CLAUDE_PLUGIN_ROOT\}' })) {
+    throw "Claude-format plugin hooks must use CLAUDE_PLUGIN_ROOT."
+}
+
+$copilotExtensionHooks = Get-Content -Raw -LiteralPath $copilotExtensionHooksPath | ConvertFrom-Json
+if (-not $copilotExtensionHooks.hooks.PreToolUse -or -not ($copilotExtensionHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{PLUGIN_ROOT\}' })) {
+    throw "Copilot extension plugin hooks must use PLUGIN_ROOT."
 }
 
 $processInfo = New-Object System.Diagnostics.ProcessStartInfo

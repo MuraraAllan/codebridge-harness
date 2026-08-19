@@ -1,7 +1,9 @@
 {
-  "name": "codebridge-harness",
+  "name": "codebridge-react-router-harness",
   "version": "1.0.0",
-  "description": "Workspace-local hook harness with MCP validation and error-classification tools.",
+  "description": "React Router harness tools, skills, and agent customizations for Codebridge workflows.",
+  "homepage": "https://labx.dev.br",
+  "repository": "https://github.com/muraraallan/codebdrige-react-router-harness",
   "skills": [
     ".agents/skills/codebridge-react-router-harness/SKILL.md",
     ".agents/skills/react-principles/SKILL.md",
@@ -10,7 +12,7 @@
     ".agents/skills/react-ux-principle/SKILL.md"
   ],
   "mcp": {
-    "configuration": ".vscode/mcp.json",
+    "configuration": ".mcp.json",
     "server": "codebridge-harness",
     "tool": "run_harness"
   }

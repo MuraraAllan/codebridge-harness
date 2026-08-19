@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "../draft"
+    }
+  ],
+  "settings": {
+    "chat.subagents.allowInvocationsFromSubagents": true,
+    "remote.autoForwardPorts": false,
+    "remote.forwardOnOpen": false,
+    "telemetry.feedback.enabled": false,
+    "telemetry.editStats.enabled": false,
+    "remote.restoreForwardedPorts": false,
+    "chat.tools.terminal.enableAutoApprove": false,
+    "chat.tools.terminal.autoApproveWorkspaceNpmScripts": false,
+  },
+}

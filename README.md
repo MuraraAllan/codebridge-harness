@@ -40,6 +40,19 @@ flowchart LR
 
 The `SessionStart` hook injects this routing orientation into every session. The hook harness verifies that injection together with the pre-tool permission decisions and post-tool error-report context.
 
+## Generic Plugin Import
+
+The repository is now shaped around a single canonical Agent Plugins 1.0 package:
+
+- `plugin.json` is the portable root manifest for clients that support Agent Plugins 1.0.
+- `mcp.json` is the portable MCP server definition for the shared `codebridge-harness` server.
+- `skills/` contains portable skill packages discovered by compatible clients.
+- `com.github.copilot/` contains VS Code and Copilot-specific agents, hooks, and rules.
+- `.claude-plugin/plugin.json`, `.mcp.json`, and `hooks/hooks.json` provide Claude and legacy compatibility adapters that point back to the same scripts and MCP server.
+- `.plugin/plugin.json` is retained as a legacy OpenPlugin-style adapter.
+
+The package should be imported from the repository root. Workspace-only files such as `.vscode/mcp.json`, `.claude/settings.json`, `rules/`, `agents/`, and `.hooks/` remain useful while developing this repo locally, but the root plugin files are the import surface.
+
 ## Validation
 
 Run the hook behavior suite:

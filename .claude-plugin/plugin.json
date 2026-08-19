@@ -1,4 +1,7 @@
 {
+  "name": "codebridge-react-router-harness",
+  "version": "1.0.0",
+  "description": "Claude-compatible adapter for the shared Codebridge React Router harness plugin.",
   "mcpServers": {
     "codebridge-harness": {
       "command": "powershell.exe",

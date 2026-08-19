@@ -1,6 +1,7 @@
-Build detailed docs of the test harness
-
-and the harness architecture.
+// recursive - deflusherDocRead
+// pseudocode ellaboration (1 of the triplice of the skills / subagents of react)
+// recursive - deflusher deflusherDocRead
+// pseudocode ellaboration (1 of the triplice of the skills / subagents of react)
 
 
 
@@ -9,74 +10,18 @@ build the identityChain
 write Readme.
 
 
-Step 3: Configure System Prompt Instructions (.github/copilot-instructions.md)
-
 
 
 
 
 An automated agent test harness runs your VS Code Copilot agent session programmatically, fires defined hooks, sends synthetic user prompts, and evaluates the agent's actions and tool outputs against expected assertions.
 
-Harness Architecture Overview
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Automated Test Harness                          │
-│                                                                        │
-│  ┌────────────────────┐     ┌──────────────────┐     ┌──────────────┐  │
-│  │ 1. Mock Workspace  │ ──► │ 2. Hook Runner   │ ──► │ 3. Assertion │  │
-│  │    Fixture Setup   │     │    & Payload     │     │    Evaluator │  │
-│  └────────────────────┘     └──────────────────┘     └──────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
-Step 1: Create the Test Suite Configuration (test-suite.json)
-Define test cases with expected input payloads, hook events, and expected decisions or outputs.
 
-JSON
-{
-  "suiteName": "Copilot Agent Hooks Test Harness",
-  "tests": [
-    {
-      "id": "TC-01-BLOCK-DESTRUCTIVE-CMD",
-      "hookEvent": "PreToolUse",
-      "input": {
-        "tool_name": "run_in_terminal",
-        "tool_input": {
-          "command": "rm -rf /"
-        }
-      },
-      "expected": {
-        "permissionDecision": "deny",
-        "reasonContains": "Destructive command"
-      }
-    },
-    {
-      "id": "TC-02-ASK-SENSITIVE-FILE-EDIT",
-      "hookEvent": "PreToolUse",
-      "input": {
-        "tool_name": "edit_file",
-        "tool_input": {
-          "filePath": ".env",
-          "content": "API_KEY=secret"
-        }
-      },
-      "expected": {
-        "permissionDecision": "ask"
-      }
-    },
-    {
-      "id": "TC-03-ALLOW-SAFE-COMMAND",
-      "hookEvent": "PreToolUse",
-      "input": {
-        "tool_name": "run_in_terminal",
-        "tool_input": {
-          "command": "npm test"
-        }
-      },
-      "expected": {
-        "permissionDecision": "allow"
-      }
-    }
-  ]
-}
 
+
+
+
+------------------- manage permissions
 
 In VS Code, terminal tool execution permissions for Copilot Agents are configured using chat.tools.terminal.autoApprove in your settings file (settings.json).This setting maps specific command names or Regular Expression patterns to boolean values (true to allow automatically, false to require prompt approval or block).Step 1: Open settings.json in VS CodePress Ctrl+Shift+P (or Cmd+Shift+P on macOS).Type and select Preferences: Open User Settings (JSON) (for global settings) or Preferences: Open Workspace Settings (JSON) (to apply only to the current project).Step 2: Configure chat.tools.terminal.autoApproveAdd the command pattern rules under chat.tools.terminal.autoApprove. You can specify exact commands, executable binaries, or regular expression matching:JSON{
   "chat.tools.terminal.enableAutoApprove": true,

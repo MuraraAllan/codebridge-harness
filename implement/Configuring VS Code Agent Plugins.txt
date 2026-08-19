@@ -1,0 +1,225 @@
+﻿Configuring VS Code Agent Plugins
+https://gemini.google.com/app/02298019355de366
+
+
+User prompt: based on https://code.visualstudio.com/docs/agent-customization/hooks#_hook-configuration-format and https://code.visualstudio.com/docs/agent-customization/hooks#_hook-configuration-format https://code.visualstudio.com/docs/agent-customization/custom-instructions https://code.visualstudio.com/docs/agent-customization/agent-plugins Field Type Required Description $schema string Yes Canonical Agent Plugins schema identifier. name string Yes Plugin name and package identifier. version string No Plugin version. Semantic Versioning is recommended. description string No Brief description of the plugin. author object No Author information with optional name, email, and url fields. homepage string No Documentation or homepage. repository string No Source repository. license string No License identifier. An SPDX identifier is recommended. keywords string[] No Search and discovery terms. extensions object No Client-specific data keyed by reverse-domain namespace. homepage is labx.dev.br repository is https://github.com/muraraallan/codebdrige-react-router-harness Agent Plugins 1.0 plugin.json with $schema set to https://agent-plugins.org/schemas/1.0.0/plugin.schema.json Copilot plugin.json Claude .claude-plugin/plugin.json Legacy OpenPlugin .plugin/plugin.json Plugin format Plugin root Agent Plugins 1.0 ${PLUGIN_ROOT} Claude ${CLAUDE_PLUGIN_ROOT} Copilot ${PLUGIN_ROOT} or ${CLAUDE_PLUGIN_ROOT} Legacy OpenPlugin ${PLUGIN_ROOT} Hook configuration format Plugin hooks use the same base format as workspace hooks. VS Code parses Claude Code hook configuration, including matcher syntax. Currently, VS Code ignores matcher values, so hooks run on every matching event. Flat format (same as workspace hooks): JSON {   "hooks": {     "PostToolUse": [       {         "type": "command",         "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format.sh"       }     ]   } } Matcher format (Claude compatibility syntax): JSON {   "hooks": {     "PostToolUse": [       {         "matcher": "Write|Edit",         "hooks": [           {             "type": "command",             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format.sh"           }         ]       }     ]   } } VS Code parses the matcher field for compatibility with Claude Code, but currently ignores matcher values. If you need to filter hook behavior in VS Code, check the event input inside the hook script. Reference plugin paths in hook commands For Claude-format plugins, use the ${CLAUDE_PLUGIN_ROOT} token in hook commands to reference scripts and files within the plugin directory. VS Code expands this token to the plugin's absolute path at runtime and also sets a CLAUDE_PLUGIN_ROOT environment variable for the hook process. Inside your script, access this as $CLAUDE_PLUGIN_ROOT (or %CLAUDE_PLUGIN_ROOT% on Windows). This is important because plugins are installed to a location outside your workspace, so you cannot use relative paths. JSON {   "hooks": {     "PreToolUse": [       {         "type": "command",         "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-tool.sh"       }     ]   }    } # Use local plugins // We need to configure such that useLocalPlugins  If you manually clone or download a plugin, you can register it with the  chat.pluginLocations  setting. This setting maps local plugin directory paths to an enabled or disabled state. Set the value to true to enable the plugin, or false to keep it registered but disabled. JSON // settings.json "chat.pluginLocations": {     "/path/to/my-plugin": true,     "/path/to/another-plugin": false } Workspace plugin recommendations Projects can recommend plugins for team members by configuring plugin settings in the workspace settings (.claude/settings.json or .github/copilot/settings.json). VS Code shows a notification the first time a chat message is sent. You can view the recommended plugins by opening the Extensions view and filtering by @agentPlugins @recommended. Specify the following fields in the settings file to configure workspace plugin recommendations: extraKnownMarketplaces: registers additional marketplaces for the project. These marketplaces appear when you search @agentPlugins in the Extensions view. enabledPlugins: lists plugins that should be enabled by default. JSON {   "extraKnownMarketplaces": {     "company-tools": {       "source": {         "source": "github",         "repo": "your-org/plugin-marketplace"       }     }   },   "enabledPlugins": {     "code-formatter@company-tools": true   } } Cross-tool compatibility Agent Plugins 1.0 is an open standard designed for cross-tool compatibility. A conformant plugin uses a root plugin.json, puts skills in skills/, and puts MCP server configuration in mcp.json. Compatible clients can discover the portable component types they support from the same package. Agent Plugins can also include client-specific manifest data and files under a stable reverse-domain namespace. Clients ignore namespaces they don't implement, so client-specific capabilities don't prevent other clients from loading the portable components. VS Code reads custom agents, slash commands, rules, and hooks from the com.github.copilot namespace, which GitHub Copilot CLI and the GitHub Copilot app also read. For example: Text my-plugin/   plugin.json   skills/   mcp.json   com.github.copilot/      # Read by VS Code and other Copilot clients   com.example.client/      # Ignored by VS Code VS Code continues to support existing Copilot, Claude, and legacy OpenPlugin formats. Plugins that don't declare the Agent Plugins schema continue to use their existing format-specific discovery rules. For details about the portable format, see the Agent Plugins specification. For other formats, see the GitHub Copilot CLI plugin reference and the Claude Code plugin marketplace documentation deflect(<<<<< Task is to before proccess, then after procces, then reflect(<<< Write a document detialed explaining how to configure a plugin
+Response: Here is a detailed guide on configuring a VS Code Agent Plugin, tailored with your specific project details.
+Configuring VS Code Agent Plugins
+Agent Plugins allow you to extend AI assistants in VS Code with custom skills, MCP servers, and hooks. The Agent Plugins 1.0 standard is designed for cross-tool compatibility, allowing the same plugin to work across different clients like GitHub Copilot and Claude Code.
+1. The Plugin Manifest (plugin.json)
+The core of your configuration is the plugin.json file. This manifest defines the plugin's metadata, schema, and capabilities. Based on your project, here is how you should structure the base manifest:
+{
+ "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+ "name": "codebridge-react-router-harness",
+ "version": "1.0.0",
+ "description": "Custom agent capabilities and routing harness tools.",
+ "homepage": "labx.dev.br",
+ "repository": "https://github.com/muraraallan/codebdrige-react-router-harness",
+ "keywords": ["react-router", "harness", "agent-plugin"]
+}
+
+Required Fields
+* $schema: Must be set to the canonical Agent Plugins schema identifier.
+* name: Your plugin's unique package identifier.
+2. Directory Structure and Namespaces
+Your plugin's layout depends on the format you are targeting. For the standard Agent Plugins 1.0 format, the configuration lives at the root of your project:
+codebdrige-react-router-harness/
+ plugin.json              # Main manifest
+ skills/                  # Custom skills
+ mcp.json                 # MCP server configuration
+ com.github.copilot/      # Client-specific namespace (VS Code/Copilot)
+ .claude-plugin/          # (Optional) Claude-specific overrides
+
+Cross-Tool Compatibility: Clients ignore reverse-domain namespaces they don't support. VS Code reads custom rules and hooks from com.github.copilot, meaning your plugin can safely include files for other environments without breaking VS Code.
+3. Hook Configuration
+Hooks allow your plugin to execute scripts at specific lifecycle events, such as PreToolUse or PostToolUse.
+VS Code supports both a flat format and a Claude-compatible "matcher" format. Note: VS Code currently parses the matcher syntax but ignores the actual matcher values, meaning the hook will run on every matching event regardless of the filter.
+Using Plugin Paths in Hooks
+Because plugins are installed outside your active workspace, you cannot use relative paths to reference your scripts. You must use the ${CLAUDE_PLUGIN_ROOT} token, which VS Code expands to the plugin's absolute path at runtime.
+Example Hook Configuration:
+{
+ "hooks": {
+   "PreToolUse": [
+     {
+       "type": "command",
+       "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-tool.sh"
+     }
+   ],
+   "PostToolUse": [
+     {
+       "matcher": "Write|Edit", 
+       "hooks": [
+         {
+           "type": "command",
+           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format.sh"
+         }
+       ]
+     }
+   ]
+ }
+}
+
+Inside your bash script, you can also access this path via the $CLAUDE_PLUGIN_ROOT environment variable.
+4. Developing Local Plugins
+While building or testing your harness locally, you need to tell VS Code where to find the plugin without publishing it to a marketplace.
+You can register your local directory by updating your VS Code settings.json:
+"chat.pluginLocations": {
+   "/path/to/local/codebdrige-react-router-harness": true,
+   "/path/to/another-plugin": false
+}
+
+* true: Registers and enables the plugin.
+* false: Registers the plugin but keeps it disabled.
+5. Workspace Plugin Recommendations
+If you want to ensure your entire team uses specific plugins when they open the project, you can configure workspace recommendations inside .github/copilot/settings.json (or .claude/settings.json).
+When a team member sends their first chat message, VS Code will notify them to install these recommended tools.
+{
+ "extraKnownMarketplaces": {
+   "labx-tools": {
+     "source": {
+       "source": "github",
+       "repo": "muraraallan/plugin-marketplace"
+     }
+   }
+ },
+ "enabledPlugins": {
+   "codebridge-react-router-harness@labx-tools": true
+ }
+}
+
+________________
+
+
+User prompt: So, I want the same repository to be compatible with all formats, I want to be able to import in claude, visual studio, google antigravity and codex. I want not to have repeated plugins
+Response: To achieve true write-once, run-anywhere compatibility across VS Code, Codex, Claude Code, and Google Antigravity, the secret is to separate your business logic (skills and tools) from your client manifests (how each AI reads the plugin).
+Recent updates in the agent ecosystem—specifically the release of the Agent Plugins 1.0 standard and cross-CLI parsing improvements—make it possible to build a single repository without duplicating your tools or prompts.
+Here is the blueprint for configuring the codebridge-react-router-harness repository so it is universally compatible.
+1. The Unified Directory Structure
+Keep your actual tools and instructions in universally supported formats (MCP and Skills), and use specific folders to serve the manifests each platform expects.
+codebdrige-react-router-harness/
+├── mcp.json                    # Shared MCP Server config (The Tools)
+├── skills/                     # Shared Agent Skills (The Prompts/Knowledge)
+│   └── route-scaffolding/
+│       └── SKILL.md
+├── scripts/                    # Shared executables for hooks
+│   └── format.sh
+├── plugin.json                 # Manifest for VS Code, Codex, Copilot (Agent Plugins 1.0)
+├── .claude-plugin/             
+│   └── plugin.json             # Manifest for Claude Code
+└── com.github.copilot/         # (Optional) VS Code-specific UI extensions
+
+2. Centralize Your Capabilities (Zero Duplication)
+Instead of writing custom plugin code for each platform, rely on the two standards that all these platforms agree on: MCP (Model Context Protocol) and Agent Skills.
+* mcp.json: Define your React Router scaffolding tools, validations, and AST parsers as an MCP server. Claude, VS Code, Codex, and Google Antigravity all natively consume MCP servers.
+* skills/: Put your contextual markdown instructions here. The Agent Skills specification (SKILL.md) is universally recognized.
+Because the tools and instructions live here, your client-specific manifests become lightweight wrappers that just point to these files.
+3. The Agent Plugins 1.0 Manifest (VS Code, Codex, Cursor, Copilot)
+At the root of your repository, create your plugin.json. This open standard is supported by OpenAI (Codex), GitHub (Copilot), and VS Code.
+Because of the 1.0 standard, you don't even need to list your MCP server or skills in this file; compatible clients automatically discover mcp.json and the skills/ directory.
+{
+ "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+ "name": "codebridge-react-router-harness",
+ "version": "1.0.0",
+ "description": "React Router harness tools and agent capabilities.",
+ "homepage": "labx.dev.br",
+ "repository": "https://github.com/muraraallan/codebdrige-react-router-harness"
+}
+
+4. The Claude Code Layer
+Anthropic relies on its own manifest located in the .claude-plugin/ directory. To prevent duplication, this manifest should simply point to the exact same shared resources.
+Create .claude-plugin/plugin.json. Use the ${CLAUDE_PLUGIN_ROOT} token to reference your shared bash scripts so Claude can execute them seamlessly:
+{
+ "name": "codebridge-react-router-harness",
+ "version": "1.0.0",
+ "mcpServers": {
+   "react-router-harness": {
+     "command": "node",
+     "args": ["${CLAUDE_PLUGIN_ROOT}/src/mcp-server.js"]
+   }
+ },
+ "hooks": {
+   "PostToolUse": [
+     {
+       "matcher": "Write|Edit",
+       "hooks": [
+         {
+           "type": "command",
+           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format.sh"
+         }
+       ]
+     }
+   ]
+ }
+}
+
+Note: VS Code also parses Claude's matcher syntax, meaning this single hook definition can be safely cross-loaded if needed, without crashing VS Code.
+5. The Google Antigravity Layer
+Google Antigravity natively understands both MCP and local Skills. When you run the Antigravity CLI (agy) or its IDE Companion plugin, it will look for MCP servers to augment its capabilities.
+Antigravity does not require a proprietary root manifest. By simply having mcp.json and the skills/ directory in your repository, Antigravity can ingest your harness tools directly into its subagents (like the Browser or Code subagent) without any extra configuration.
+6. The Agent Profile Trick (Cross-CLI Quirks)
+If you define custom agent profiles that restrict tool access, you'll encounter a syntax quirk: Claude uses a comma-separated scalar (tools: Read, Write), while legacy Copilot expects a JSON array (tools: ["view", "edit"]).
+The Solution: Always use the Claude scalar format. The Copilot CLI and Agent Plugins 1.0 standard have been updated to natively parse the Claude-style scalar list. They will silently tolerate the Claude formatting, meaning you only have to write your agent profiles once.
+By structuring the repo this way, your heavy lifting (MCP logic and Skill instructions) is written exactly once. The client manifests (plugin.json and .claude-plugin/plugin.json) act merely as lightweight pointers, ensuring you never have to duplicate a plugin definition.
+Sources
+1. What are Agent Plugins? Complete guide to the new open agent plugin standard
+2. Plugins & Skills | Google Antigravity Docs
+3. Antigravity Companion Plugin for JetBrains IDEs
+4. Browser Overview - Google Antigravity
+5. Agent profiles: accept Claude-style `tools:` scalar list with name aliases for cross-CLI plugins · Issue #3531 · github/copilot-cli
+________________
+
+
+User prompt: OK , so reproc(>> If I just import from github in those tools your structure will work? Justify explicitly for each
+Response: Yes, if you import your repository directly from GitHub into these tools, the unified structure will work seamlessly across all of them. Here is the explicit justification for how each platform processes your repository.
+Visual Studio Code (GitHub Copilot)
+VS Code natively supports importing directly from Git URLs and handles the Agent Plugins 1.0 standard out of the box.
+* Import Mechanism: You can run the Chat: Install Plugin From Source command from the Command Palette and paste your GitHub repository URL. You can also add the shorthand reference (e.g., muraraallan/codebdrige-react-router-harness) to the chat.plugins.marketplaces array in your VS Code settings.
+* Why it Works: VS Code auto-detects the plugin format by locating the root plugin.json file and verifying the Agent Plugins $schema. It explicitly reads the standard mcp.json file to load your servers, while safely ignoring client-specific namespaces like .claude-plugin/ that it does not implement.
+Claude Code
+Claude Code is designed to pull plugins directly from Git repositories, falling back to Anthropic-specific manifests when needed.
+* Import Mechanism: You can add your GitHub repository as a custom marketplace by running /plugin marketplace add muraraallan/codebdrige-react-router-harness in the CLI, or install directly from the URL using the /plugin install command.
+* Why it Works: When Claude clones the repository, it will prioritize its native .claude-plugin/plugin.json manifest if it exists, or fall back to the root files. This allows it to load the shared MCP tool logic and execute your bash scripts using the ${CLAUDE_PLUGIN_ROOT} token without conflicting with VS Code's rules.
+Google Antigravity
+Google Antigravity does not rely on traditional IDE plugin manifests, but it fundamentally runs on the same MCP standard your repository utilizes.
+* Import Mechanism: Antigravity includes a built-in MCP Store where you can connect your GitHub account via a Personal Access Token directly in the Agent panel.
+* Why it Works: Antigravity cares about the underlying infrastructure. Because your repository cleanly isolates the core tools in mcp.json and standalone skills, Antigravity agents can connect to your MCP server logic directly, entirely ignoring the plugin.json and .claude-plugin wrapper files intended for IDEs.
+Codex and Alternative Clients (e.g., Kiro, Legacy CLI)
+Third-party and legacy Codex-powered clients support importing GitHub URLs while respecting the new 1.0 portability standards.
+* Import Mechanism: Tools like Kiro explicitly support GitHub imports via their interface (e.g., navigating to "Add Custom Power → Import power from GitHub" and pasting the repository URL).
+* Why it Works: The Agent Plugins 1.0 standard was specifically designed as a portable package format. Clients that support the standard will read the root plugin.json and mcp.json, and if a tool only understands legacy Copilot formats, it automatically uses the Copilot formatting as a default fallback.
+Sources
+1. Agent plugins in VS Code
+2. GitHub - robbyczgw-cla/web-search-plus-mcp: Give your agent the web as real sources, never made-up answers — an MCP server with 13 search and 9 extract providers plus an optional local, key-free Hound integration.
+3. Google Antigravity + MCP Servers: How to Connect GitHub and Push Code with Just a Prompt (Part 2)step by step | by Geeta Kakrani - Medium
+4. GitHub - google-antigravity/antigravity-sdk-python: A Python library for building AI agents that leverage the full power of Google Antigravity.
+5. Agent Plugin - Cosmic API Reference
+________________
+
+
+User prompt: What is the exact schema and structure I need for the shared mcp.json file so it validates correctly across all these platforms?
+Response: To guarantee cross-platform compatibility, your mcp.json file must satisfy both the legacy client formats (which rely on command signatures) and the strict Agent Plugins 1.0 specification (which forbids transport inference).
+Here is the exact universal schema for a local stdio server.
+{
+ "mcpServers": {
+   "react-router-harness": {
+     "type": "stdio",
+     "command": "node",
+     "args": ["src/mcp-server.js"],
+     "env": {
+       "NODE_ENV": "production"
+     }
+   }
+ }
+}
+
+Schema Requirements
+* The Top-Level Wrapper: The entire configuration must be wrapped inside a root mcpServers object.
+* Explicit Transport (type): You must include "type": "stdio". While older client configurations (like Claude Desktop) historically inferred the transport based on the presence of a command string, the new Agent Plugins 1.0 specification explicitly requires the type key to prevent clients from having to guess the network protocol.
+* Execution (command & args):
+   * command: The executable token (e.g., "node", "npx", "python"). Do not write the full shell string here.
+   * args: An array of string arguments passed to the executable.
+* Environment Context (env): An optional key-value object for injecting environment variables (like API keys or runtime modes) specifically for this server process.
+By combining the explicit "type": "stdio" field with standard command arguments, this single mcp.json file remains perfectly valid for Claude Code, GitHub Copilot, Codex, and Google Antigravity simultaneously.
+Sources
+1. Agent plugins 1.0: How to build once, use across clients - Ginger Labs
+________________
