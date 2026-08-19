@@ -1,0 +1,214 @@
+Build detailed docs of the test harness
+
+and the harness architecture.
+
+
+
+build the permissionChain
+build the identityChain
+write Readme.
+
+
+Step 3: Configure System Prompt Instructions (.github/copilot-instructions.md)
+
+
+
+
+
+An automated agent test harness runs your VS Code Copilot agent session programmatically, fires defined hooks, sends synthetic user prompts, and evaluates the agent's actions and tool outputs against expected assertions.
+
+Harness Architecture Overview
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Automated Test Harness                          │
+│                                                                        │
+│  ┌────────────────────┐     ┌──────────────────┐     ┌──────────────┐  │
+│  │ 1. Mock Workspace  │ ──► │ 2. Hook Runner   │ ──► │ 3. Assertion │  │
+│  │    Fixture Setup   │     │    & Payload     │     │    Evaluator │  │
+│  └────────────────────┘     └──────────────────┘     └──────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+Step 1: Create the Test Suite Configuration (test-suite.json)
+Define test cases with expected input payloads, hook events, and expected decisions or outputs.
+
+JSON
+{
+  "suiteName": "Copilot Agent Hooks Test Harness",
+  "tests": [
+    {
+      "id": "TC-01-BLOCK-DESTRUCTIVE-CMD",
+      "hookEvent": "PreToolUse",
+      "input": {
+        "tool_name": "run_in_terminal",
+        "tool_input": {
+          "command": "rm -rf /"
+        }
+      },
+      "expected": {
+        "permissionDecision": "deny",
+        "reasonContains": "Destructive command"
+      }
+    },
+    {
+      "id": "TC-02-ASK-SENSITIVE-FILE-EDIT",
+      "hookEvent": "PreToolUse",
+      "input": {
+        "tool_name": "edit_file",
+        "tool_input": {
+          "filePath": ".env",
+          "content": "API_KEY=secret"
+        }
+      },
+      "expected": {
+        "permissionDecision": "ask"
+      }
+    },
+    {
+      "id": "TC-03-ALLOW-SAFE-COMMAND",
+      "hookEvent": "PreToolUse",
+      "input": {
+        "tool_name": "run_in_terminal",
+        "tool_input": {
+          "command": "npm test"
+        }
+      },
+      "expected": {
+        "permissionDecision": "allow"
+      }
+    }
+  ]
+}
+Step 2: Build the Automated Runner (run-harness.ps1)
+This PowerShell script reads the test cases, feeds the JSON payloads directly into your hook script via stdin, captures stdout, and asserts the output against expected results.
+
+PowerShell
+[CmdletBinding()]
+param (
+    [string]$TestSuitePath = "$PSScriptRoot/test-suite.json",
+    [string]$HookScriptPath = "$PSScriptRoot/scripts/validate-tool.ps1"
+)
+
+# Load Test Suite Configuration
+if (-not (Test-Path $TestSuitePath)) {
+    Write-Error "Test suite file not found at: $TestSuitePath"
+    exit 1
+}
+
+$suite = Get-Content -Raw -Path $TestSuitePath | ConvertFrom-Json
+$passedCount = 0
+$failedCount = 0
+
+Write-Host "==================================================" -ForegroundColor Cipher
+Write-Host " Running Agent Hook Harness: $($suite.suiteName)" -ForegroundColor Cyan
+Write-Host "==================================================" -ForegroundColor Cipher
+
+foreach ($test in $suite.tests) {
+    Write-Host "`n[RUNNING] $($test.id)" -NoNewline
+
+    # Convert test input object to JSON string for stdin
+    $jsonInput = $test.input | ConvertTo-Json -Depth 5 -Compress
+
+    # Invoke the hook script as an isolated process passing input via standard input
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = "powershell.exe"
+    $processInfo.Arguments = "-ExecutionPolicy Bypass -File `"$HookScriptPath`""
+    $processInfo.RedirectStandardInput = $true
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.RedirectStandardError = $true
+    $processInfo.UseShellExecute = $false
+    $processInfo.CreateNoWindow = $true
+
+    $process = [System.Diagnostics.Process]::Start($processInfo)
+    $process.StandardInput.WriteLine($jsonInput)
+    $process.StandardInput.Close()
+
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+    $process.WaitForExit()
+
+    # Parse hook output
+    if ([string]::IsNullOrWhitespace($stdout)) {
+        Write-Host " -> [FAIL] (Empty output returned)" -ForegroundColor Red
+        if ($stderr) { Write-Host "     Error: $stderr" -ForegroundColor Red }
+        $failedCount++
+        continue
+    }
+
+    try {
+        $actualOutput = $stdout | ConvertFrom-Json
+        $actualDecision = $actualOutput.hookSpecificOutput.permissionDecision
+        $actualReason = $actualOutput.hookSpecificOutput.permissionDecisionReason
+
+        # Assertion Checks
+        $isDecisionValid = $actualDecision -eq $test.expected.permissionDecision
+        $isReasonValid = $true
+
+        if ($test.expected.reasonContains) {
+            $isReasonValid = $actualReason -like "*$($test.expected.reasonContains)*"
+        }
+
+        if ($isDecisionValid -and $isReasonValid) {
+            Write-Host " -> [PASS]" -ForegroundColor Green
+            Write-Host "     Decision: $actualDecision" -ForegroundColor DarkGray
+            $passedCount++
+        } else {
+            Write-Host " -> [FAIL]" -ForegroundColor Red
+            Write-Host "     Expected: $($test.expected.permissionDecision)" -ForegroundColor Yellow
+            Write-Host "     Actual:   $actualDecision" -ForegroundColor Red
+            if ($actualReason) { Write-Host "     Reason:   $actualReason" -ForegroundColor DarkGray }
+            $failedCount++
+        }
+    } catch {
+        Write-Host " -> [FAIL] (Invalid JSON returned)" -ForegroundColor Red
+        Write-Host "     Raw Output: $stdout" -ForegroundColor Red
+        $failedCount++
+    }
+}
+
+# Summary
+Write-Host "`n==================================================" -ForegroundColor Cipher
+Write-Host " Test Summary: $passedCount Passed | $failedCount Failed" -ForegroundColor ($failedCount -eq 0 ? "Green" : "Red")
+Write-Host "==================================================" -ForegroundColor Cipher
+
+if ($failedCount -gt 0) { exit 1 } else { exit 0 }
+Step 3: Run the Test Harness
+Execute the runner script in your terminal or continuous integration pipeline:
+
+PowerShell
+.\run-harness.ps1
+==================================================
+ Running Agent Hook Harness: Copilot Agent Hooks Test Harness
+==================================================
+
+[RUNNING] TC-01-BLOCK-DESTRUCTIVE-CMD -> [PASS]
+     Decision: deny
+[RUNNING] TC-02-ASK-SENSITIVE-FILE-EDIT -> [PASS]
+     Decision: ask
+[RUNNING] TC-03-ALLOW-SAFE-COMMAND -> [PASS]
+     Decision: allow
+
+==================================================
+ Test Summary: 3 Passed | 0 Failed
+==================================================
+
+
+
+In VS Code, terminal tool execution permissions for Copilot Agents are configured using chat.tools.terminal.autoApprove in your settings file (settings.json).This setting maps specific command names or Regular Expression patterns to boolean values (true to allow automatically, false to require prompt approval or block).Step 1: Open settings.json in VS CodePress Ctrl+Shift+P (or Cmd+Shift+P on macOS).Type and select Preferences: Open User Settings (JSON) (for global settings) or Preferences: Open Workspace Settings (JSON) (to apply only to the current project).Step 2: Configure chat.tools.terminal.autoApproveAdd the command pattern rules under chat.tools.terminal.autoApprove. You can specify exact commands, executable binaries, or regular expression matching:JSON{
+  "chat.tools.terminal.enableAutoApprove": true,
+  "chat.tools.terminal.autoApprove": {
+    // 1. Allow the specific test harness command
+    "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\tests\\run-harness.ps1": true,
+
+    // 2. Allow any PowerShell script running inside the .\tests\ folder via regex
+    "/^powershell(\\.exe)? .*\\\\tests\\\\.*/i": true,
+
+    // 3. Allow standard non-destructive development tools via regex
+    "/^npm (test|run|start).*/": true,
+    "/^dotnet (build|test).*/": true,
+
+    // 4. Always block or prompt for destructive file/system commands
+    "rm": false,
+    "del": false,
+    "rmdir": false,
+    "/^Remove-Item/i": false
+  }
+}
+Pattern Matching RulesPattern FormatExampleDescriptionExact String Match"powershell.exe -File test.ps1": trueMatches the exact terminal string issued by the agent.Regex Match"/^powershell.*/i": trueUses forward slashes /.../ with optional flags (i for case-insensitive) to match dynamic commands.Global Allow Toggle"chat.tools.autoApprove": trueBypasses approval dialogs across all agent tools (use with caution).Step 3: Restart/Reload VS Code SessionOpen the Command Palette (Ctrl+Shift+P / Cmd+Shift+P).Run Developer: Reload Window to ensure the new auto-approval rules are active.Prompt the agent in the Agents View—commands matching your configured rule will execute instantly in the integrated terminal without asking for manual confirmation.

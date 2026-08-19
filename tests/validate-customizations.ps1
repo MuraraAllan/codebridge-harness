@@ -8,13 +8,21 @@ $userInstructionsPath = Join-Path $workspaceRoot ".github\instructions\user-cont
 $agentPath = Join-Path $workspaceRoot ".github\agents\codebridge-react-router-harness.agent.md"
 $mcpConfigPath = Join-Path $workspaceRoot ".vscode\mcp.json"
 $mcpServerPath = Join-Path $workspaceRoot "scripts\windows\serve-harness-mcp.ps1"
-$claudeInstructionsPath = Join-Path $workspaceRoot "CLAUDE.md"
+$claudeInstructionsPath = Join-Path $workspaceRoot ".claude\CLAUDE.md"
 $claudeAgentPath = Join-Path $workspaceRoot ".claude\agents\codebridge-react-router-harness.md"
 $claudeHooksPath = Join-Path $workspaceRoot ".claude\settings.json"
 $claudeMcpPath = Join-Path $workspaceRoot ".mcp.json"
 $pluginDefinitionPath = Join-Path $workspaceRoot ".plugin\plugin.json"
+$sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
+$coordinatorAgentPath = Join-Path $workspaceRoot ".github\agents\react-router-harness.agent.md"
+$workerAgentPath = Join-Path $workspaceRoot ".github\agents\codebridge-harness.agent.md"
+$principleSkillPaths = @(
+    (Join-Path $workspaceRoot ".agents\skills\react-design-principle\SKILL.md"),
+    (Join-Path $workspaceRoot ".agents\skills\react-developer-principle\SKILL.md"),
+    (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
+)
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath)) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath) + $principleSkillPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -33,6 +41,27 @@ if ($userInstructions -notmatch "User Context Instructions") {
 $agent = Get-Content -Raw -LiteralPath $agentPath
 if ($agent -notmatch "(?m)^name:\s*codebridge-react-router-harness\r?$") {
     throw "Custom agent does not define the expected name."
+}
+
+$sharedInstructions = Get-Content -Raw -LiteralPath $sharedInstructionsPath
+if ($sharedInstructions -notmatch "Codebridge Harness Composition") {
+    throw "Shared instructions do not contain the expected composition heading."
+}
+
+$coordinatorAgent = Get-Content -Raw -LiteralPath $coordinatorAgentPath
+if ($coordinatorAgent -notmatch "(?m)^name:\s*react-router-harness\r?$") {
+    throw "Coordinator agent does not define the expected name."
+}
+
+$workerAgent = Get-Content -Raw -LiteralPath $workerAgentPath
+if ($workerAgent -notmatch "(?m)^name:\s*codebridge-harness\r?$") {
+    throw "Worker agent does not define the expected name."
+}
+
+foreach ($path in $principleSkillPaths) {
+    if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*react-.*-principle\r?$") {
+        throw "Principle skill does not define the expected name: $path"
+    }
 }
 
 $mcpConfig = Get-Content -Raw -LiteralPath $mcpConfigPath | ConvertFrom-Json
@@ -63,6 +92,10 @@ if (-not $claudeMcp.mcpServers.'codebridge-harness') {
 $pluginDefinition = Get-Content -Raw -LiteralPath $pluginDefinitionPath | ConvertFrom-Json
 if ($pluginDefinition.name -ne "codebridge-harness" -or $pluginDefinition.mcp.server -ne "codebridge-harness" -or $pluginDefinition.mcp.tool -ne "run_harness") {
     throw "Plugin definition does not identify the codebridge-harness MCP tool."
+}
+
+if ($pluginDefinition.skills -notcontains ".agents/skills/react-principles/SKILL.md") {
+    throw "Plugin definition does not register the React principle skill index."
 }
 
 if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".github\hooks\codebridge-react-router-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
