@@ -3,13 +3,12 @@
     "tests":  [
                   {
                       "id":  "inject-session-context",
-                      "hookScript":  "..\\scripts\\windows\\emit-1234.ps1",
+                      "hookScript":  "..\\scripts\\windows\\inject-context-userinstructions.ps1",
                       "input":  {
                                     "hook_event_name":  "SessionStart"
                                 },
                       "expected":  {
-                                       "hookEventName":  "SessionStart",
-                                       "additionalContext":  "Codebridge composition"
+                                       "source":  "user-context.instructions.md"
                                    }
                   },
                   {
@@ -47,13 +46,13 @@
                   },
                   {
                       "id":  "notify-on-user-prompt",
-                      "hookScript":  "..\\scripts\\windows\\emit-1234.ps1",
+                      "hookScript":  "..\\scripts\\windows\\inject-context-image-interpret.ps1",
                       "input":  {
                                     "hook_event_name":  "UserPromptSubmit",
                                     "prompt":  "Run the hook harness."
                                 },
                       "expected":  {
-                                       "systemMessage":  "Codebridge composition context is available."
+                                       "hookEventName":  "UserPromptSubmit"
                                    }
                   },
                   {

@@ -2,9 +2,6 @@
   "folders": [
     {
       "path": "."
-    },
-    {
-      "path": "../draft"
     }
   ],
   "settings": {
@@ -16,5 +13,10 @@
     "remote.restoreForwardedPorts": false,
     "chat.tools.terminal.enableAutoApprove": false,
     "chat.tools.terminal.autoApproveWorkspaceNpmScripts": false,
+    "chat.agent.sandbox.allowAutoApprove": false,
+    "chat.agent.sandbox.allowUnsandboxedCommands": false,
+    "github.copilot.chat.agentDebugLog.fileLogging.enabled": true,
+    "chat.editor.localAgent.enabled": false,
+    "chat.editor.preferCopilotHarness": false,
   },
 }

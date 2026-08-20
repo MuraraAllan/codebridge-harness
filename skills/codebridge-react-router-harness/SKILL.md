@@ -30,5 +30,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\run-harness.ps1 
 - The tool validation hook is [validate-tool.ps1](../../../scripts/validate-tool.ps1). Its response must provide `hookSpecificOutput.permissionDecision` with `allow`, `ask`, or `deny`.
 - Add a focused test case to [test-suite.json](../../../tests/test-suite.json) whenever hook decision logic changes.
 - Invoke PowerShell scripts with `-NoProfile -ExecutionPolicy Bypass`; direct invocation can be blocked by the local execution policy.
-- Preserve the `emit-1234.ps1` session-start output unless the hook contract is intentionally changed.
+- Preserve hook session-start outputs unless the hook contract is intentionally changed.
 - Use `commitContextChanges` to draft commit-message text from ContextChanges inputs; do not execute git from the harness tool.

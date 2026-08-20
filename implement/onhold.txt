@@ -3,6 +3,7 @@
 // recursive - deflusher deflusherDocRead
 // pseudocode ellaboration (1 of the triplice of the skills / subagents of react)
 
+// we need to update the docummentat
 
 
 build the permissionChain
@@ -11,10 +12,6 @@ write Readme.
 
 
 
-
-
-
-An automated agent test harness runs your VS Code Copilot agent session programmatically, fires defined hooks, sends synthetic user prompts, and evaluates the agent's actions and tool outputs against expected assertions.
 
 
 
