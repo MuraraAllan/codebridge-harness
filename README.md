@@ -18,6 +18,9 @@ flowchart LR
     P --> V[developer]
     P --> UX[UX]
 
+    CM --> GL[git log -X reader]
+    CM --> CD[changes-digraph node emitter]
+
     R --> H
     H --> M[codebridge-harness MCP]
     H --> T[PowerShell hook harness]
@@ -87,3 +90,21 @@ Validate the complete customization composition and MCP contract:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\validate-customizations.ps1
 ```
+
+## Recent Changes
+
+1. **extend codex plugin** (`3677cb57`)
+   - Extended Codex plugin manifest and setup integration.
+
+2. **Extended recursive agent into deflusherDocRead pre-processor** (`bb0f68db`)
+   - **L1**: Updated [agents/recursive-processor.agent.md](agents/recursive-processor.agent.md) and [com.github.copilot/agents/recursive-processor.agent.md](com.github.copilot/agents/recursive-processor.agent.md) to produce a FeedForward packet: `taskList`, `intention`, `contextualDescription`, `docReadPlan`, and `processingMode`.
+   - **L2**: Updated [tests/validate-customizations.ps1](tests/validate-customizations.ps1) so validation requires the `deflusherDocRead` contract.
+   - **L3**: Documented pre-processor behavior.
+
+3. **Implemented first pass toward generic plugin import** (`1a699dad`)
+   - **L1**: Added canonical Agent Plugins files: [plugin.json](plugin.json) and [mcp.json](mcp.json). Added Claude/legacy adapters in [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.mcp.json](.mcp.json), [hooks/hooks.json](hooks/hooks.json), and [.plugin/plugin.json](.plugin/plugin.json).
+   - **L2**: Added VS Code/Copilot namespace files under [com.github.copilot](com.github.copilot), updated [.vscode/settings.json](.vscode/settings.json) for moved `.hooks/`, and updated [tests/validate-customizations.ps1](tests/validate-customizations.ps1).
+   - **L3**: Maintained repo-root canonical surface with multi-ecosystem compatibility.
+
+4. **try to organize** (`3fcb8f1d`)
+   - Initial organization pass for workspace scripts and repository layout.
