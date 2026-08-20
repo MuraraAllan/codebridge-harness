@@ -1,7 +1,7 @@
 ﻿---
 name: commit-context-harness
 description: "Draft commit messages from ContextChanges content without invoking git."
-user-invocable: false
+user-invocable: true
 tools: [read, search, "codebridge-harness/*"]
 agents: []
 hooks:

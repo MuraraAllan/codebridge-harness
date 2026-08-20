@@ -13,6 +13,7 @@ agents:
     codebridge-react-developer-principle,
     codebridge-react-ux-principle,
     recursive-processor,
+    contextImageInterpret,
   ]
 ---
 
@@ -22,7 +23,7 @@ This is the first invocation in the Codebridge composition. Inspect the active f
 
 Use the workspace MCP tool to run the full hook harness after changing hook behavior. `PreToolUse` is enabled for this workspace. When evaluating risky actions, the validator must request confirmation with `ask`; it must not block the agent flow with `deny`.
 
-Delegate React concern analysis to the matching `codebridge-react-*-principle` agent. Use `commit-context-harness` to draft commit messages from ContextChanges without invoking git. Use `recursive-processor` for more than four comparable independent subtasks. The explicit `agents` list is the allowed subagent set for this harness agent.
+Delegate React concern analysis to the matching `codebridge-react-*-principle` agent. Use `commit-context-harness` to draft commit messages from ContextChanges without invoking git. Use `recursive-processor` for more than four comparable independent subtasks. Whenever user requests, prompts, or inputs involve pictures or images, invoke `contextImageInterpret` to perform structured visual analysis. The explicit `agents` list is the allowed subagent set for this harness agent.
 
 Make sure you refer to ../user-context.instruction
 # User Context Instructions

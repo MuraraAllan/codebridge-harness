@@ -43,8 +43,11 @@ $principleSkillPaths = @(
     (Join-Path $workspaceRoot ".agents\skills\react-developer-principle\SKILL.md"),
     (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
 )
+$imageAgentPath = Join-Path $workspaceRoot "agents\contextImageInterpret.agent.md"
+$imageCopilotAgentPath = Join-Path $workspaceRoot "com.github.copilot\agents\contextImageInterpret.agent.md"
+$imageClaudeAgentPath = Join-Path $workspaceRoot ".claude\agents\contextImageInterpret.md"
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $codexPluginManifestPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $codexPluginManifestPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath, $imageAgentPath, $imageCopilotAgentPath, $imageClaudeAgentPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -100,6 +103,14 @@ if ($recursiveAgent -notmatch "(?m)^name:\s*recursive-processor\r?$") {
 }
 if ($recursiveAgent -notmatch "deflusherDocRead" -or $recursiveAgent -notmatch "docReadPlan" -or $recursiveAgent -notmatch "FeedForward") {
     throw "Recursive processor does not define the deflusherDocRead FeedForward contract."
+}
+
+$imageAgent = Get-Content -Raw -LiteralPath $imageAgentPath
+if ($imageAgent -notmatch "(?m)^name:\s*contextImageInterpret\r?$") {
+    throw "Image interpretation agent does not define the expected name."
+}
+if ($imageAgent -notmatch "quadrant" -or $imageAgent -notmatch "fourLinesDescriptioN") {
+    throw "Image interpretation agent does not define the expected JSON contract."
 }
 
 $copilotRecursiveAgentPath = Join-Path $workspaceRoot "com.github.copilot\agents\recursive-processor.agent.md"
