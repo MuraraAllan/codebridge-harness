@@ -36,10 +36,19 @@ flowchart TD
         UPS --> A["React Router Harness<br/>(Primary Entrypoint)"]
         SS -.->|"Inject context"| A
 
+<<<<<<< HEAD
         A -->|"Plan & deflush"| RP["Recursive Processor<br/>(deflusherDocRead)"]
         RP -->|"More than 4 tasks"| RP
         RP -->|"Visual assets"| CII["Context Image Interpret<br/>(Quadrant JSON analysis)"]
         A -->|"Visual assets"| CII
+=======
+    CM --> GL[git log -X reader]
+    CM --> CD[changes-digraph node emitter]
+
+    R --> H
+    H --> M[codebridge-harness MCP]
+    H --> T[PowerShell hook harness]
+>>>>>>> f910ff7 (document and pratially define the instructions on harness)
 
         A -->|"Router coordination"| RRH["React Router Harness<br/>(Coordinator)"]
         A -->|"Harness worker"| CBH["Codebridge Harness<br/>(Worker & MCP)"]
@@ -82,6 +91,7 @@ flowchart TD
     class GL,CD storage;
 ```
 
+<<<<<<< HEAD
 ### File System Trajectory
 
 Physical repository layout, plugin manifests, extension namespaces, and multi-ecosystem import surfaces:
@@ -178,6 +188,8 @@ flowchart TB
     class RootAgents indigo;
 ```
 
+=======
+>>>>>>> f910ff7 (document and pratially define the instructions on harness)
 ## Composition
 
 `codebridge-react-router-harness` is the entry agent. It can delegate integration work to `react-router-harness`, harness implementation to `codebridge-harness`, and focused analysis to the three principle agents:
