@@ -16,7 +16,6 @@
     "chat.agent.sandbox.allowAutoApprove": false,
     "chat.agent.sandbox.allowUnsandboxedCommands": false,
     "github.copilot.chat.agentDebugLog.fileLogging.enabled": true,
-    "chat.editor.localAgent.enabled": false,
-    "chat.editor.preferCopilotHarness": false,
+    "chat.editor.localAgent.enabled": true,
   },
 }
