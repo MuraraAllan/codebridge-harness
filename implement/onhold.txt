@@ -1,15 +1,12 @@
-// recursive - deflusherDocRead
-// pseudocode ellaboration (1 of the triplice of the skills / subagents of react)
-// recursive - deflusher deflusherDocRead
-// pseudocode ellaboration (1 of the triplice of the skills / subagents of react)
-
-// we need to update the docummentat
 
 
+implement meta q-agent that is able to take advantage of the topologycally-improvement concept
 build the permissionChain
 build the identityChain
 write Readme.
+build SPSC compatibility
 
+https://github.com/GoogleCloudPlatform/generative-ai/tree/main/agents/adk/zero-trust-agents
 
 
 

@@ -244,7 +244,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\validate-customi
 
 1. **Synchronized agent composition parity & dual trajectory diagrams**
    - **L1**: Updated [README.md](README.md) with two comprehensive diagrams: `Meta Reasoning Trajectory` (theoretical/hook lifecycle & metaOrchestrator FeedForward) and `File System Trajectory` (physical repository layout across Copilot, Claude, Codex, and legacy namespaces).
-   - **L2**: Aligned [com.github.copilot/agents/codebridge-react-router-harness.agent.md](com.github.copilot/agents/codebridge-react-router-harness.agent.md) with [agents/codebridge-react-router-harness.agent.md](agents/codebridge-react-router-harness.agent.md) and aligned [hooks.json](hooks.json) / [com.github.copilot/hooks/hooks.json](com.github.copilot/hooks/hooks.json) to use `PLUGIN_ROOT`.
+   - **L2**: Aligned [com.github.copilot/agents/codebridge-react-router-harness.agent.md](com.github.copilot/agents/codebridge-react-router-harness.agent.md) with [agents/codebridge-react-router-harness.agent.md](agents/codebridge-react-router-harness.agent.md).
    - **L3**: Validated test harness and customization tests with 100% pass rate.
 
 2. **extend codex plugin** (`3677cb57`)
