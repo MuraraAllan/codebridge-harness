@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
-  "mcpServers": {
+  "servers": {
     "codebridge-harness": {
       "type": "stdio",
       "command": "powershell.exe",
@@ -9,9 +9,8 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
-      ],
-      "cwd": "${PLUGIN_ROOT}"
+        ".\\scripts\\windows\\serve-harness-mcp.ps1"
+      ]
     }
   }
 }

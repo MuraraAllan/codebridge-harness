@@ -10,7 +10,7 @@
 				"-File",
 				".\\scripts\\windows\\serve-harness-mcp.ps1"
 			],
-			"cwd": "."
-		}
+			"cwd": "${workspaceFolder}"
+		} 
 	}
 }

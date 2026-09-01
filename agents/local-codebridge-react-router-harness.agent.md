@@ -3,10 +3,10 @@ name: codebridge-react-router-harness
 description: "Primary entrypoint for this workspace. Validate and maintain the agent-hook harness, then route work to the approved specialist agents."
 user-invocable: true
 tools:
-  [vscode, execute, read, agent, browser, 'codebridge-harness/*', vscodeGeneral/rename, vscodeGeneral/usages, vscodeNotebooks/createJupyterNotebook, vscodeNotebooks/editNotebook, edit, search, web, todo]
+  [vscode, execute, read, agent, browser, vscodeGeneral/rename, vscodeGeneral/usages, vscodeNotebooks/createJupyterNotebook, vscodeNotebooks/editNotebook, edit, search, web, 'codebridge-harness/*', todo]
 agents:
   [
-    react-router-harness,
+    react-router-harness,deflect(<<< make sure you use @attachment:SKILL.md   agent with the @attachment:user-context.instructions.md user-context definitions!
     codebridge-harness,
     commit-context-harness,
     codebridge-react-design-principle,
