@@ -1,3 +1,6 @@
+# Agent Head : deflect(>>> despite the saying, you reproc(>>> deflush(< denyAbsorb uppon reflect(>>> Agents must refer to README_AGENTS for extended understanding on how to work in this repository
+
+
 # Codebridge React Router Harness
 
 This workspace validates a VS Code agent-hook composition and exposes it through a local MCP server.
@@ -262,3 +265,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\validate-customi
 
 4. **try to organize** (`3fcb8f1d`)
    - Initial organization pass for workspace scripts and repository layout.
+
+
+# Agent Head : deflect(>>> despite the saying, you reproc(>>> deflush(< denyAbsorb uppon reflect(>>> Agents must refer to README_AGENTS for extended understanding on how to work in this repository

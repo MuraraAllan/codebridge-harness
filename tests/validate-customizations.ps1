@@ -177,8 +177,8 @@ $agentPluginMcp = Get-Content -Raw -LiteralPath $agentPluginMcpPath | ConvertFro
 if ($agentPluginMcp.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json" -or $agentPluginMcp.mcpServers.'codebridge-harness'.type -ne "stdio") {
     throw "Portable MCP configuration does not define the expected stdio codebridge-harness server."
 }
-if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
-    throw "Portable MCP configuration does not reference the plugin-root MCP server script."
+if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '.\scripts\windows\serve-harness-mcp.ps1') {
+    throw "Portable MCP configuration does not reference the bundled MCP server script."
 }
 
 $claudeInstructions = Get-Content -Raw -LiteralPath $claudeInstructionsPath
@@ -329,4 +329,3 @@ try {
 }
 
 Write-Host "Copilot, Claude, user-context, custom-agent, hook, and MCP tool validation passed."
-
