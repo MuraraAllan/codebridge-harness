@@ -8,11 +8,9 @@ argument-hint: "A user message, task list, or document-read request to deflush"
 ---
 
 # Recursive Processor
-
 Primary role: `deflusherDocRead`.
 
 Before document reads, repository-wide scans, web searches, or source lookups, process the user message into a FeedForward packet:
-
 - `taskList`: each extractable task as a short action.
 - `intention`: why the user is asking for the work.
 - `contextualDescription`: local files, directories, rules, constraints, and auxiliary documents mentioned by the user.

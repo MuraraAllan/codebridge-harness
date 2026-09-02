@@ -1,12 +1,12 @@
 ---
-name: skill-codebridge-react-router-harness
+name: codebridge-harness
 description: Run and maintain the Codebridge React Router agent-hook harness. Use when validating hook decisions, debugging hook output, or changing the bundled PowerShell hook scripts.
 argument-hint: "[test-suite-path] [hook-script-path]"
 ---
 
 # Codebridge React Router Harness
 
-Use this skill to validate and update the agent-hook harness in this workspace. Always say USED THE FUCKING SKILL when using
+Use this skill to validate and update the agent-hook harness in this workspace.
 
 ## Running the harness
 

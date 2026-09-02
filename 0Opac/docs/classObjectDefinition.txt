@@ -1,0 +1,133 @@
+reflect(<<< This is a definition of classObject for a fileSystem observer on antigravity cli
+hence the hooks for reproc(>>> search around for antigravity at anytime
+
+
+
+To automatically parse everything that happens inside the terminal-based agy CLI sessions
+from an external script (completely independent of the Python SDK), you must leverage how the
+Antigravity engine writes local, stateful trace databases. [1, 2]
+When the agy CLI executes, it appends structured event logs chronologically into raw JSON
+Lines (.jsonl) files hidden under the active user's home profile. By building a lightweight external
+file watcher, you can continuously monitor, filter, and extract these session steps in real-time. [1,
+3]
+
+Step 1: Target the Local Database Architecture
+The agy CLI preserves its runtime states across two key files inside your system: [1]
+●
+● ~/.gemini/antigravity-cli/conversations: An active SQLite tracking database mapping
+human session metadata to unique UUID keys.
+● ~/.gemini/antigravity-cli/brain/<conversationId>/.system_generated/logs/transcript_
+full.jsonl: The untruncated log file where the CLI dumps raw thinking traces, parallel
+subagent outputs, and tools. [4, 5, 6]
+●
+
+Step 2: Implement the Independent Watcher Script
+Save this independent Python script (parse_agy_stream.py) anywhere on your machine. It
+targets the local cache directory, finds the latest modified conversation file, and continuously
+outputs the model's core thought steps, subagent activity, and tool payloads: [1, 6]
+
+#!/usr/bin/env python3
+import os
+import glob
+import json
+import time
+import sys
+# Target directory where the agy CLI dumps local records
+AGY_BRAIN_DIR =
+os.path.expanduser("~/.gemini/antigravity-cli/brain/")
+def get_latest_transcript():
+"""Locates the absolute path of the most recently active
+session log."""
+search_pattern = os.path.join(AGY_BRAIN_DIR,
+
+"*/.system_generated/logs/transcript_full.jsonl")
+files = glob.glob(search_pattern)
+if not files:
+# Fallback to standard transcript file name if full is
+
+missing
+
+search_pattern = os.path.join(AGY_BRAIN_DIR,
+
+"*/.system_generated/logs/transcript.jsonl")
+files = glob.glob(search_pattern)
+if not files:
+return None
+return max(files, key=os.path.getmtime)
+def parse_log_entry(line):
+"""Processes a single JSONL event packet captured from the CLI
+stream."""
+try:
+entry = json.loads(line)
+entry_type = entry.get("type", "UNKNOWN")
+# 1. Process Thinking Processes
+thoughts = entry.get("thoughts") or entry.get("reasoning")
+if thoughts:
+print(f"\n🧠 [THINKING STEP] ({entry_type})")
+print(f" {thoughts.strip()}")
+# 2. Process Orchestrated Tool Invocations
+if "toolCall" in entry:
+tool = entry["toolCall"]
+print(f"️ [TOOL DISPATCHED]: {tool.get('name')}")
+print(f" Arguments: {json.dumps(tool.get('args'),
+
+indent=2)}")
+
+# 3. Process Final Subagent Delegations / Parallel Tasks
+if entry_type == "SUBAGENT_RESPONSE" or "subagent" in
+
+entry:
+
+print(f"🤖 [SUBAGENT DELEGATION]:
+{entry.get('subagent', 'Parallel Agent')}")
+except json.JSONDecodeError:
+pass
+
+def watch_cli_session():
+"""Polls the filesystem outside of the SDK context to parse raw
+execution metrics."""
+print("⏳ Waiting for an active agy CLI session transcript...")
+current_file = None
+
+while True:
+latest_file = get_latest_transcript()
+if latest_file and latest_file != current_file:
+current_file = latest_file
+print(f"\n🔄 Linked to Live CLI Session:
+
+{current_file}")
+
+# Start tracking the file from the beginning
+with open(current_file, "r") as f:
+# Seek to end if you only want fresh records, or
+
+read from zero to backfill
+
+f.seek(0, os.SEEK_END)
+while get_latest_transcript() == current_file:
+line = f.readline()
+if not line:
+time.sleep(0.2) # Prevent CPU spiking
+continue
+parse_log_entry(line)
+
+time.sleep(1.0)
+if __name__ == "__main__":
+try:
+watch_cli_session()
+except KeyboardInterrupt:
+print("\nStopping log tracking.")
+sys.exit(0)
+
+Step 3: Run the Automation
+1. Fire up your monitoring panel in one terminal window:
+python3 parse_agy_stream.py
+2. Run standard instructions natively through the system shell in a separate terminal panel:
+agy "Refactor the file-system helper module and check for errors"
+[7]
+The script will pick up the freshly mounted session file instantly, parsing out exactly what the
+internal agy loop is doing behind the interface scene. [1, 8]
+Would you like to extend this script to auto-export structural markdown summaries (like
+saving an independent audit_trail.md) whenever a session finishes, or do you need to forward
+
+these parsed JSON events directly into a local Dockerized database log stream?

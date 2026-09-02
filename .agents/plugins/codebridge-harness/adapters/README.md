@@ -8,4 +8,4 @@ The files copied here preserve the original Codebridge host configuration:
 - `hooks/` contains the generic hook JSON reference.
 
 They are not executed by Codex plugin installation. Use them when adapting the suite back into the matching host workspace.
-G:/plugin_main_folder/.agents/plugins/codebridge-react-router-harness/skills/codebridge-react-router-harness/SKILL.md
+G:/plugin_main_folder/.agents/plugins/codebridge-harness/skills/codebridge-harness/SKILL.md

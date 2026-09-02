@@ -1,5 +1,5 @@
 {
-  "name": "codebridge-react-router-harness",
+  "name": "codebridge-harness",
   "version": "1.0.0",
   "description": "Portable React Router agent-hook harness with PowerShell validation and local MCP tools.",
   "author": {

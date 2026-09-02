@@ -1,4 +1,4 @@
-w{
+{
   "servers": {
     "codebridge-harness": {
       "command": "powershell.exe",

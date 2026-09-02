@@ -1,5 +1,5 @@
 ---
-name: codebridge-react-router-harness
+name: codebridge-harness
 description: Run and maintain the Codebridge React Router agent-hook harness. Use when validating hook decisions, debugging hook output, or changing the bundled PowerShell hook scripts.
 argument-hint: "[test-suite-path] [hook-script-path]"
 ---

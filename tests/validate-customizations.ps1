@@ -5,14 +5,14 @@ $ErrorActionPreference = "Stop"
 $workspaceRoot = Split-Path -Parent $PSScriptRoot
 $instructionsPath = Join-Path $workspaceRoot "rules\copilot-instructions.md"
 $userInstructionsPath = Join-Path $workspaceRoot "rules\user-context.instructions.md"
-$agentPath = Join-Path $workspaceRoot "agents\codebridge-react-router-harness.agent.md"
+$agentPath = Join-Path $workspaceRoot "agents\codebridge-harness.agent.md"
 $mcpConfigPath = Join-Path $workspaceRoot ".vscode\mcp.json"
 $codexPluginManifestPath = Join-Path $workspaceRoot ".codex-plugin\plugin.json"
 $agentPluginManifestPath = Join-Path $workspaceRoot "plugin.json"
 $agentPluginMcpPath = Join-Path $workspaceRoot "mcp.json"
 $mcpServerPath = Join-Path $workspaceRoot "scripts\windows\serve-harness-mcp.ps1"
 $claudeInstructionsPath = Join-Path $workspaceRoot ".claude\CLAUDE.md"
-$claudeAgentPath = Join-Path $workspaceRoot ".claude\agents\codebridge-react-router-harness.md"
+$claudeAgentPath = Join-Path $workspaceRoot ".claude\agents\codebridge-harness.md"
 $claudeHooksPath = Join-Path $workspaceRoot ".claude\settings.json"
 $claudePluginManifestPath = Join-Path $workspaceRoot ".claude-plugin\plugin.json"
 $pluginHooksPath = Join-Path $workspaceRoot "hooks\hooks.json"
@@ -22,7 +22,7 @@ $claudeMcpPath = Join-Path $workspaceRoot ".mcp.json"
 $pluginDefinitionPath = Join-Path $workspaceRoot ".plugin\plugin.json"
 $sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
 $coordinatorAgentPath = Join-Path $workspaceRoot "agents\react-router-harness.agent.md"
-$workerAgentPath = Join-Path $workspaceRoot "agents\codebridge-harness.agent.md"
+$workerAgentPath = Join-Path $workspaceRoot "agents\codebridge-harness-worker.agent.md"
 $commitContextAgentPath = Join-Path $workspaceRoot "agents\commit-context-harness.agent.md"
 $commitContextHookPath  = Join-Path $workspaceRoot "scripts\windows\emit-commit-context.ps1"
 $changesDigraphHookPath = Join-Path $workspaceRoot "scripts\windows\emit-changes-digraph-node.ps1"
@@ -64,7 +64,7 @@ if ($userInstructions -notmatch "User Context Instructions") {
 }
 
 $agent = Get-Content -Raw -LiteralPath $agentPath
-if ($agent -notmatch "(?m)^name:\s*codebridge-react-router-harness\r?$") {
+if ($agent -notmatch "(?m)^name:\s*codebridge-harness\r?$") {
     throw "Custom agent does not define the expected name."
 }
 if ($agent -notmatch "Primary entrypoint") {
@@ -82,7 +82,7 @@ if ($coordinatorAgent -notmatch "(?m)^name:\s*react-router-harness\r?$") {
 }
 
 $workerAgent = Get-Content -Raw -LiteralPath $workerAgentPath
-if ($workerAgent -notmatch "(?m)^name:\s*codebridge-harness\r?$") {
+if ($workerAgent -notmatch "(?m)^name:\s*codebridge-harness-worker\r?$") {
     throw "Worker agent does not define the expected name."
 }
 
@@ -152,7 +152,7 @@ if (-not $mcpConfig.servers.'codebridge-harness') {
 }
 
 $codexPluginManifest = Get-Content -Raw -LiteralPath $codexPluginManifestPath | ConvertFrom-Json
-if ($codexPluginManifest.name -ne "codebridge-react-router-harness" -or $codexPluginManifest.skills -ne "./skills/") {
+if ($codexPluginManifest.name -ne "codebridge-harness" -or $codexPluginManifest.skills -ne "./skills/") {
     throw "Codex plugin manifest does not define the expected name and skills path."
 }
 if (-not $codexPluginManifest.mcpServers.'codebridge-harness') {
@@ -166,7 +166,7 @@ if (-not $codexPluginManifest.interface.displayName -or -not $codexPluginManifes
 }
 
 $agentPluginManifest = Get-Content -Raw -LiteralPath $agentPluginManifestPath | ConvertFrom-Json
-if ($agentPluginManifest.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" -or $agentPluginManifest.name -ne "codebridge-react-router-harness") {
+if ($agentPluginManifest.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" -or $agentPluginManifest.name -ne "codebridge-harness") {
     throw "Agent Plugins manifest does not define the expected schema and name."
 }
 if (-not $agentPluginManifest.extensions.'com.github.copilot') {
@@ -187,7 +187,7 @@ if ($claudeInstructions -notmatch "Claude Instructions") {
 }
 
 $claudeAgent = Get-Content -Raw -LiteralPath $claudeAgentPath
-if ($claudeAgent -notmatch "(?m)^name:\s*codebridge-react-router-harness\r?$") {
+if ($claudeAgent -notmatch "(?m)^name:\s*codebridge-harness\r?$") {
     throw "Claude agent does not define the expected name."
 }
 
@@ -198,7 +198,7 @@ if (-not $claudeHooks.hooks.PostToolUse) {
 if (-not ($claudeHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
     throw "Claude hook configuration does not register emit-changes-digraph-node.ps1."
 }
-$workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-react-router-harness.json") | ConvertFrom-Json
+$workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-harness.json") | ConvertFrom-Json
 if (-not ($workspaceHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
     throw "Workspace hook configuration does not register emit-changes-digraph-node.ps1."
 }
@@ -209,7 +209,7 @@ if (-not $claudeMcp.mcpServers.'codebridge-harness') {
 }
 
 $pluginDefinition = Get-Content -Raw -LiteralPath $pluginDefinitionPath | ConvertFrom-Json
-if ($pluginDefinition.name -ne "codebridge-react-router-harness" -or $pluginDefinition.mcp.server -ne "codebridge-harness" -or $pluginDefinition.mcp.tool -ne "run_harness") {
+if ($pluginDefinition.name -ne "codebridge-harness" -or $pluginDefinition.mcp.server -ne "codebridge-harness" -or $pluginDefinition.mcp.tool -ne "run_harness") {
     throw "Plugin definition does not identify the codebridge-harness MCP tool."
 }
 
@@ -217,7 +217,7 @@ if ($pluginDefinition.skills -notcontains ".agents/skills/react-principles/SKILL
     throw "Plugin definition does not register the React principle skill index."
 }
 
-if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-react-router-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
+if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
     throw "PreToolUse must be enabled in both repository hook configurations."
 }
 

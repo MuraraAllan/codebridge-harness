@@ -183,7 +183,7 @@ flowchart TB
 
 ## Composition
 
-`codebridge-react-router-harness` is the entry agent. It can delegate integration work to `react-router-harness`, harness implementation to `codebridge-harness`, and focused analysis to the three principle agents:
+`codebridge-harness` is the entry agent. It can delegate integration work to `react-router-harness` and focused analysis to the three principle agents:
 
 - `codebridge-react-design-principle` for design, accessibility, responsiveness, and performance.
 - `codebridge-react-developer-principle` for component architecture, composition, specialization, state, and abstractions.
@@ -215,7 +215,7 @@ A Git-backed marketplace entry can point directly at this repository root:
 
 ```json
 {
-  "name": "codebridge-react-router-harness",
+  "name": "codebridge-harness",
   "source": {
     "source": "url",
     "url": "https://github.com/muraraallan/codebdrige-react-router-harness.git",
@@ -247,7 +247,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\validate-customi
 
 1. **Synchronized agent composition parity & dual trajectory diagrams**
    - **L1**: Updated [README.md](README.md) with two comprehensive diagrams: `Meta Reasoning Trajectory` (theoretical/hook lifecycle & metaOrchestrator FeedForward) and `File System Trajectory` (physical repository layout across Copilot, Claude, Codex, and legacy namespaces).
-   - **L2**: Aligned [com.github.copilot/agents/codebridge-react-router-harness.agent.md](com.github.copilot/agents/codebridge-react-router-harness.agent.md) with [agents/codebridge-react-router-harness.agent.md](agents/codebridge-react-router-harness.agent.md).
+   - **L2**: Aligned [com.github.copilot/agents/codebridge-harness-entry.agent.md](com.github.copilot/agents/codebridge-harness-entry.agent.md) with [agents/codebridge-harness.agent.md](agents/codebridge-harness.agent.md).
    - **L3**: Validated test harness and customization tests with 100% pass rate.
 
 2. **extend codex plugin** (`3677cb57`)

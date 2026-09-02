@@ -1,0 +1,89 @@
+// codebridge - libs - pre definition - initial scope after POC
+// librarys being implemented now:
+// labx, harness, 0opac, grdeno, netherGrasp, prowlingProjectile, wallye
+
+// ONGOING
+// 0opac - implement a generic, hooked tool for every client.
+
+
+
+// ---------- STORAGE --------
+// centralize the paradigms in storage for better reusing
+// 
+
+
+
+//--------- 0OPAC ---------
+
+// contains WebMCP <> MCP
+// observability, local and remote.
+// telemetry, local and remote
+
+// tasks
+// Implement at antigravity
+// implement a mcp server that can be retrieved / activated / infered
+// play around / plan with extending the inference 
+// implement the beginning of cryptography, isolate web3 with a poc mnemonic
+// toughts on transport layer
+
+
+//--------- GRDENO ---------
+// so grdeno is priority 1. - composing document processing.
+// compose dynamic ontology from the conceptual steps.
+// To use the browser and hook the docs, and then compose the 
+// ontology and the document storage is more important, so we gain traction there.
+// check for superlinked examples to start.
+// build the notational view, starting by the repository
+
+// how can grdeno better take advantage of storage sharing?
+// offer a reliable structure to consistenly store while avoiding changes the lds and 
+// onto bases
+
+// --------- netherGrasp ---------
+// Controls consistency and enforces security
+
+// --------- PROWLINGPROJECTILE --------- 
+// WebMCP server ?
+// we need derailing and cloacking for the q-agent.
+// implement meta q-agent that is able to take advantage of the topologycally-improvement concept
+// prowlingProjectile needs still implementation, but is ready to be built
+// over both firefox ( self-meta q )
+// and over chrome / chromium to start collaborating and connecting
+// with gemma 4 - so direct the planning towards exploring gemma browser 
+
+
+// --------- HARNESS --------- 
+// Migrate to new MCP server
+// you are composed of. use the ontology to map
+// expose an "agentical" listing, i.e maps around in the repository for the agents.
+// expose a landscape for tool-call, for hooks, and everything else accordingly to provider
+
+
+// --------- LABX --------- 
+// designSystem, defaultAccessPoint on allan's personal
+// reusableComponents (componentization), designSystem, storybook, 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://github.com/GoogleCloudPlatform/generative-ai/tree/main/agents/adk/zero-trust-agents
+
+
+https://x.com/Singh_Aditya1/status/2085594754629423448 
+How can we implement some sort of visual stuff for this ? Should we market over that?
+
+// currently what most take time is documenting and planning / writing.

@@ -2,7 +2,7 @@
 
 
 # Codebridge Harness Composition
-You must use codebridge-react-router-harness alongside user-context.instructions
+You must use codebridge-harness alongside user-context.instructions
 
 Adopt metaOrchestrator persona into FeedForward(>>> deflush(<< based on deflush(>>> FlushBack{L1, L2, L3} from userMessageContext, you also reflect(>>> and describe briefly userMessageTaskList, userMessageIntention and userMessageContextualDescription
 
