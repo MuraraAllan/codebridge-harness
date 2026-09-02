@@ -2,15 +2,15 @@
 	"mcpServers": {
 		"codebridge-harness": {
 			"type": "stdio",
-			"command": "powershell.exe",
+			"command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
 			"args": [
 				"-NoProfile",
 				"-ExecutionPolicy",
 				"Bypass",
 				"-File",
-				".\\scripts\\windows\\serve-harness-mcp.ps1"
+				"${PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
 			],
-			"cwd": "${workspaceFolder}"
+			"cwd": "${PLUGIN_ROOT}"
 		} 
 	}
 }

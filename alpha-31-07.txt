@@ -4,6 +4,10 @@
 
 // ONGOING
 // 0opac - implement a generic, hooked tool for every client.
+// harness - migrate to alpha composition
+// harness fix mcp issue for file folder
+// implement meta-planning
+${workspaceFolder} is a VS Code workspace-variable, not a portable root MCP variable, so the root mcp.json is being loaded in a context that cannot expand it. I’ll separate the portable plugin path from the VS Code workspace path, preserving the existing .vscode/mcp.json entry as the Visual Studio configuration.
 
 
 
@@ -67,7 +71,9 @@
 
 
 
-
+// -------- NOT IN ALPHA / SCOPING OR TRANSITIONING --------
+// Vermillion - self independent topology. Anti spy, tracing and those daily services. Specially anti bot-nets, and anti cookiers.
+Service to provide information about transparency, risks, effects.
 
 
 

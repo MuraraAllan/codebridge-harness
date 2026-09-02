@@ -1,7 +1,7 @@
 {
   "servers": {
     "codebridge-harness": {
-      "command": "powershell.exe",
+      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
       "cwd": "${workspaceFolder}",
       "args": [
         "-NoProfile",

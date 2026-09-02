@@ -15,6 +15,7 @@ $claudeInstructionsPath = Join-Path $workspaceRoot ".claude\CLAUDE.md"
 $claudeAgentPath = Join-Path $workspaceRoot ".claude\agents\codebridge-harness.md"
 $claudeHooksPath = Join-Path $workspaceRoot ".claude\settings.json"
 $claudePluginManifestPath = Join-Path $workspaceRoot ".claude-plugin\plugin.json"
+$rootHooksPath = Join-Path $workspaceRoot "hooks.json"
 $pluginHooksPath = Join-Path $workspaceRoot "hooks\hooks.json"
 $copilotExtensionHooksPath = Join-Path $workspaceRoot "com.github.copilot\hooks\hooks.json"
 $copilotExtensionRulesPath = Join-Path $workspaceRoot "com.github.copilot\rules\copilot-instructions.md"
@@ -25,6 +26,7 @@ $coordinatorAgentPath = Join-Path $workspaceRoot "agents\react-router-harness.ag
 $workerAgentPath = Join-Path $workspaceRoot "agents\codebridge-harness-worker.agent.md"
 $commitContextAgentPath = Join-Path $workspaceRoot "agents\commit-context-harness.agent.md"
 $commitContextHookPath  = Join-Path $workspaceRoot "scripts\windows\emit-commit-context.ps1"
+$reasoningProofHookPath = Join-Path $workspaceRoot "scripts\windows\emit-reasoning-proof.ps1"
 $changesDigraphHookPath = Join-Path $workspaceRoot "scripts\windows\emit-changes-digraph-node.ps1"
 $recursiveAgentPath = Join-Path $workspaceRoot "agents\recursive-processor.agent.md"
 $principleAgentHookPaths = @{
@@ -47,7 +49,7 @@ $imageAgentPath = Join-Path $workspaceRoot "agents\contextImageInterpret.agent.m
 $imageCopilotAgentPath = Join-Path $workspaceRoot "com.github.copilot\agents\contextImageInterpret.agent.md"
 $imageClaudeAgentPath = Join-Path $workspaceRoot ".claude\agents\contextImageInterpret.md"
 
-foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $codexPluginManifestPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath, $imageAgentPath, $imageCopilotAgentPath, $imageClaudeAgentPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
+foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $codexPluginManifestPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $rootHooksPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $reasoningProofHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath, $imageAgentPath, $imageCopilotAgentPath, $imageClaudeAgentPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required customization file is missing: $path"
     }
@@ -177,7 +179,7 @@ $agentPluginMcp = Get-Content -Raw -LiteralPath $agentPluginMcpPath | ConvertFro
 if ($agentPluginMcp.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json" -or $agentPluginMcp.mcpServers.'codebridge-harness'.type -ne "stdio") {
     throw "Portable MCP configuration does not define the expected stdio codebridge-harness server."
 }
-if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '.\scripts\windows\serve-harness-mcp.ps1') {
+if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
     throw "Portable MCP configuration does not reference the bundled MCP server script."
 }
 
@@ -202,6 +204,10 @@ $workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hook
 if (-not ($workspaceHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
     throw "Workspace hook configuration does not register emit-changes-digraph-node.ps1."
 }
+$rootHooks = Get-Content -Raw -LiteralPath $rootHooksPath | ConvertFrom-Json
+if (-not ($rootHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($rootHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
+    throw "Root hook configuration does not register reasoning proof and post reasoning hooks."
+}
 
 $claudeMcp = Get-Content -Raw -LiteralPath $claudeMcpPath | ConvertFrom-Json
 if (-not $claudeMcp.mcpServers.'codebridge-harness') {
@@ -220,14 +226,17 @@ if ($pluginDefinition.skills -notcontains ".agents/skills/react-principles/SKILL
 if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
     throw "PreToolUse must be enabled in both repository hook configurations."
 }
+if (-not ($claudeHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($workspaceHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" })) {
+    throw "PreToolUse must register emit-reasoning-proof.ps1 in both repository hook configurations."
+}
 
 $pluginHooks = Get-Content -Raw -LiteralPath $pluginHooksPath | ConvertFrom-Json
-if (-not $pluginHooks.hooks.PreToolUse -or -not ($pluginHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{CLAUDE_PLUGIN_ROOT\}' })) {
+if (-not $pluginHooks.hooks.PreToolUse -or -not ($pluginHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($pluginHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{CLAUDE_PLUGIN_ROOT\}' })) {
     throw "Claude-format plugin hooks must use CLAUDE_PLUGIN_ROOT."
 }
 
 $copilotExtensionHooks = Get-Content -Raw -LiteralPath $copilotExtensionHooksPath | ConvertFrom-Json
-if (-not $copilotExtensionHooks.hooks.PreToolUse -or -not ($copilotExtensionHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{PLUGIN_ROOT\}' })) {
+if (-not $copilotExtensionHooks.hooks.PreToolUse -or -not ($copilotExtensionHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($copilotExtensionHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{PLUGIN_ROOT\}' })) {
     throw "Copilot extension plugin hooks must use PLUGIN_ROOT."
 }
 
@@ -288,7 +297,7 @@ try {
         arguments = @{}
     }
 
-    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 13 passed, 0 failed") {
+    if ($runResponse.result.isError -or $runResponse.result.content[0].text -notmatch "Test Summary: 14 passed, 0 failed") {
         throw "MCP run_harness tool did not run the hook harness successfully."
     }
 

@@ -6,7 +6,7 @@ tools:
   [vscode, execute, read, agent, browser, vscodeGeneral/rename, vscodeGeneral/usages, vscodeNotebooks/createJupyterNotebook, vscodeNotebooks/editNotebook, edit, search, web, 'codebridge-harness/*', todo]
 agents:
   [
-    react-router-harness,deflect(<<< make sure you use @attachment:SKILL.md   agent with the @attachment:user-context.instructions.md user-context definitions!
+    react-router-harness,
     codebridge-harness,
     commit-context-harness,
     codebridge-react-design-principle,

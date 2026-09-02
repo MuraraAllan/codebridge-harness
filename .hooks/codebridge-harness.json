@@ -3,6 +3,12 @@
                   "PreToolUse":  [
                                      {
                                          "type":  "command",
+                                         "command":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\emit-reasoning-proof.ps1",
+                                         "cwd":  ".",
+                                         "timeout":  5
+                                     },
+                                     {
+                                         "type":  "command",
                                          "command":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\validate-tool.ps1",
                                          "cwd":  ".",
                                          "timeout":  5

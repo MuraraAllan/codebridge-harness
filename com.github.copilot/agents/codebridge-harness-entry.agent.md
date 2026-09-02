@@ -51,4 +51,4 @@ each task of the taskList will be exposed within the taskExecutionContext.
 each task that of the taskList that is not going to be sovled now will be exposed within postponedTaskContext and localizedVersionMetaFunction.postClassify will be executed. 
 The agenticalMetaClassifier is posed to compose a quadruple context. being it compraised of taskContext and taskExecutionContext, tempMemoryContext (which holds the composition and the side-line thoughts for self-reflection), and PostPoneFeedForward(<<< localizedVersionMetaFunction.acessory_memory handling,  as always_update_memory.  
 
-deflect(<<< FeedForward(<<<   before instantiating agenticalMetaClassifier, adopt ../user-context.instructions.md and retrieve deflush(<<<< metaFunctionMemoryContext using localizedVersionMetaFunction.acessory_memory as always_retrieve_memory before intersecting with deflush(userMemory.
+deflect(<<< FeedForward(<<< before instantiating agenticalMetaClassifier, adopt ../user-context.instructions.md and retrieve deflush(<<<< metaFunctionMemoryContext using localizedVersionMetaFunction.acessory_memory as always_retrieve_memory before intersecting with deflush(userMemory.
