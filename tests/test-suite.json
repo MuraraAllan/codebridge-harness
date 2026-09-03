@@ -2,6 +2,19 @@
     "suiteName":  "Codebridge React Router Harness",
     "tests":  [
                   {
+                      "id":  "emit-reasoning-proof-before-tool-use",
+                      "hookScript":  "..\\scripts\\windows\\emit-reasoning-proof.ps1",
+                      "input":  {
+                                    "hook_event_name":  "PreToolUse",
+                                    "tool_name":  "view"
+                                },
+                      "expected":  {
+                                       "hookEventName":  "PreToolUse",
+                                       "additionalContext":  "12345677",
+                                       "systemMessage":  "Reasoning proof marker: 12345677"
+                                   }
+                  },
+                  {
                       "id":  "inject-session-context",
                       "hookScript":  "..\\scripts\\windows\\inject-context-userinstructions.ps1",
                       "input":  {
@@ -159,7 +172,7 @@
                                 },
                       "expected":  {
                                        "hookEventName":  "PostToolUse",
-                                       "additionalContext":  "commit-context-harness recorded changes-digraph node"
+                                       "additionalContext":  "post reasoning proof marker 12345677"
                                    }
                   }
               ]

@@ -1,9 +1,11 @@
 {
-  "prettier.enableDebugLogs": true,
+  "prettier.enableDebugLogs": false,
   "chat.subagents.allowInvocationsFromSubagents": true,
+  "chat.includeReferencedInstructions": true,
   "chat.hookFilesLocations": {
     ".hooks": true,
     ".claude/settings.json": true,
     "~/.claude/settings.json": true
-  }
+  },
+  "github.copilot.chat.agentDebugLog.fileLogging.maxRetainedSessionLogs": 500
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "codebridge-react-router-harness",
+  "name": "codebridge-harness",
   "version": "1.0.0",
   "description": "React Router harness tools, skills, and agent customizations for Codebridge workflows.",
   "homepage": "https://labx.dev.br",

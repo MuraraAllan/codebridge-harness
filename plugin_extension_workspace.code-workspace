@@ -2,9 +2,6 @@
   "folders": [
     {
       "path": "."
-    },
-    {
-      "path": "../implement"
     }
   ],
   "settings": {
@@ -19,13 +16,13 @@
     "chat.agent.sandbox.allowAutoApprove": false,
     "chat.agent.sandbox.allowUnsandboxedCommands": false,
     "github.copilot.chat.agentDebugLog.fileLogging.enabled": true,
-    "chat.editor.localAgent.enabled": false,
+    "chat.editor.localAgent.enabled": true,
     "chat.editor.preferCopilotHarness": false,
 		"workbench.browser.dataStorage": "ephemeral",
 		"workbench.browser.autoReloadOnFileChange": false,
 		"workbench.browser.enableChatTools": true,
 		"workbench.browser.newTabPlacement": "window",
-		"workbench.browser.openLocalhostLinks": true,
+		"workbench.browser.openLocalhostLinks": false,
     "workbench.browser.showInTitleBar": true,
     "diffEditor.experimental.showEmptyDecorations": false,
     "diffEditor.renderSideBySide": true,

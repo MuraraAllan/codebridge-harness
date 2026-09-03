@@ -6,6 +6,7 @@ $hookEventName = "PostToolUse"
 $toolName = ""
 $toolInput = $null
 $toolResponse = ""
+$proofMarker = "12345677"
 
 if (-not [string]::IsNullOrWhiteSpace($rawInput)) {
     $inputJson = $rawInput | ConvertFrom-Json
@@ -62,16 +63,33 @@ if (-not (Test-Path -LiteralPath $digraphDir)) {
 
 $fileNameSafe = (($title -replace ':', '') -replace '\s+', '-')
 $nodePath = Join-Path $digraphDir "$fileNameSafe.md"
+$timestamp = (Get-Date).ToUniversalTime().ToString("o")
+$toolInputJson = if ($toolInput) { $toolInput | ConvertTo-Json -Depth 8 -Compress } else { "{}" }
+$responsePreview = if ([string]::IsNullOrWhiteSpace($toolResponse)) { "" } else { $toolResponse.Trim() }
+if ($responsePreview.Length -gt 1000) {
+    $responsePreview = $responsePreview.Substring(0, 1000) + "... [truncated]"
+}
 
 @"
 # $title
 
 $($draftObj.commitMessage)
+
+## Post reasoning summary
+
+- Proof marker: $proofMarker
+- Hook event: $hookEventName
+- Tool: $toolName
+- Timestamp UTC: $timestamp
+- Tool input: ``$toolInputJson``
+- Tool response summary: ``$responsePreview``
+- Reasoning record: Tool '$toolName' completed and was recorded as an observable post-step reasoning summary. This file intentionally stores an auditable summary of the step, not hidden chain-of-thought.
 "@ | Set-Content -LiteralPath $nodePath -Encoding utf8
 
 @{
     hookSpecificOutput = @{
         hookEventName = 'PostToolUse'
-        additionalContext = "commit-context-harness recorded changes-digraph node '$title' at $nodePath."
+        proofMarker = $proofMarker
+        additionalContext = "commit-context-harness recorded changes-digraph node '$title' at $nodePath with post reasoning proof marker $proofMarker."
     }
 } | ConvertTo-Json -Depth 4 -Compress

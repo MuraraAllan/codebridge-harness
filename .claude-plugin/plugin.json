@@ -1,5 +1,5 @@
 {
-  "name": "codebridge-react-router-harness",
+  "name": "codebridge-harness",
   "version": "1.0.0",
   "description": "Claude-compatible adapter for the shared Codebridge React Router harness plugin.",
   "mcpServers": {
@@ -10,9 +10,9 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${CLAUDE_PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
+        ".\\scripbts\\windows\\serve-harness-mcp.ps1"
       ],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+      "cwd": "."
     }
   }
 }

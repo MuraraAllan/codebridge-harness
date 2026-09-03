@@ -1,11 +1,11 @@
 {
-  "name": "codebridge-react-router-harness",
+  "name": "codebridge-harness",
   "version": "1.0.0",
   "description": "React Router harness tools, skills, and agent customizations for Codebridge workflows.",
   "homepage": "https://labx.dev.br",
   "repository": "https://github.com/muraraallan/codebdrige-react-router-harness",
   "skills": [
-    ".agents/skills/codebridge-react-router-harness/SKILL.md",
+    ".agents/skills/codebridge-harness/SKILL.md",
     ".agents/skills/react-principles/SKILL.md",
     ".agents/skills/react-design-principle/SKILL.md",
     ".agents/skills/react-developer-principle/SKILL.md",

@@ -1,14 +1,14 @@
-w{
+{
   "servers": {
     "codebridge-harness": {
       "command": "powershell.exe",
-      "cwd": "${workspaceFolder}",
+      "cwd": ".",
       "args": [
         "-NoProfile",
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}\\scripts\\windows\\serve-harness-mcp.ps1"
+        "S:\\codeBridge\\codebridge-harness\\scripts\\windows\\serve-harness-mcp.ps1"
       ]
     }
   }

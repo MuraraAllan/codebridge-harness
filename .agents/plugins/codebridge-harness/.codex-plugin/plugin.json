@@ -1,0 +1,26 @@
+{
+  "name": "codebridge-harness",
+  "version": "1.0.0",
+  "description": "Portable React Router agent-hook harness with PowerShell validation and local MCP tools.",
+  "author": {
+    "name": "Codebridge"
+  },
+  "license": "MIT",
+  "keywords": ["react-router", "harness", "powershell", "mcp", "validation"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Codebridge React Router Harness",
+    "shortDescription": "Validate React Router hook and MCP compositions.",
+    "longDescription": "Runs the Codebridge React Router harness and exposes local MCP tools for validation, error classification, and ContextChanges commit drafting.",
+    "developerName": "Codebridge",
+    "category": "Developer Tools",
+    "capabilities": ["Local MCP", "PowerShell", "Validation"],
+    "defaultPrompt": [
+      "Run the Codebridge React Router harness.",
+      "Validate the current hook customization composition.",
+      "Draft a ContextChanges commit message without git."
+    ],
+    "brandColor": "#176B87"
+  }
+}
