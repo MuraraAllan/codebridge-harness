@@ -8,9 +8,9 @@
 				"-ExecutionPolicy",
 				"Bypass",
 				"-File",
-				"..\\scriptsa\\windows\\serve-harness-mcp.ps1"
+				"..\\scriptsd\\windows\\serve-harness-mcp.ps1"
 			],
-			"cwd": "."
-		}
+			"cwd": ".."
+		} 
 	}
 }

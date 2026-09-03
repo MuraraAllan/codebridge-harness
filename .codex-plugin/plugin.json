@@ -25,9 +25,9 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
+        ".\\scritpts\\windows\\serve-harness-mcp.ps1"
       ],
-      "cwd": "${PLUGIN_ROOT}"
+      "cwd": "."
     }
   },
   "interface": {

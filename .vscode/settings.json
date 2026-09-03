@@ -1,6 +1,7 @@
 {
   "prettier.enableDebugLogs": true,
   "chat.subagents.allowInvocationsFromSubagents": true,
+  "chat.includeReferencedInstructions": true,
   "chat.hookFilesLocations": {
     ".hooks": true,
     ".claude/settings.json": true,

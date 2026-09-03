@@ -1,17 +1,16 @@
 {
-  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
-  "mcpServers": {
-    "codebridge-harness": {
-      "type": "stdio",
-      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-      "cwd": "${PLUGIN_ROOT}",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
-      ]
-    }
-  }
+	"mcpServers": {
+		"codebridge-harness": {
+			"type": "stdio",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"S:\\codeBridge\\codebridge-harness\\scripts\\windows\\serve-harness-mcp.ps1"
+			],
+			"cwd": "."
+		}
+	}
 }

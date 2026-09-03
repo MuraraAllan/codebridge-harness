@@ -10,9 +10,9 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${CLAUDE_PLUGIN_ROOT}\\scripts\\windows\\serve-harness-mcp.ps1"
+        ".\\scripbts\\windows\\serve-harness-mcp.ps1"
       ],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+      "cwd": "."
     }
   }
 }

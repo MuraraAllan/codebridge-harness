@@ -81,8 +81,8 @@ Service to provide information about transparency, risks, effects.
 
 
 
-
-
+// MIGRATE TO AN EXTENSION
+https://code.visualstudio.com/api/extension-guides/ai/prompt-tsx
 
 
 

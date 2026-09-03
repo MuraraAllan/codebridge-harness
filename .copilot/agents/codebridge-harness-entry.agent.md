@@ -1,8 +1,20 @@
 ---
 name: codebridge-harness
-description: "Implement and validate Codebridge hook, MCP, and PowerShell harness work. Use as the worker for harness-specific changes."
-user-invocable: false
-tools: [read, search, edit, execute, "codebridge-harness/*"]
+description: "Primary entrypoint for this workspace. Validate and maintain the agent-hook harness, then route work to the approved specialist agents."
+user-invocable: true
+tools:
+  [vscode, execute, read, agent, edit, search, web, browser, 'codebridge-harness/*', todo]
+agents:
+  [
+    react-router-harness,
+    codebridge-harness,
+    commit-context-harness,
+    codebridge-react-design-principle,
+    codebridge-react-developer-principle,
+    codebridge-react-ux-principle,
+    recursive-processor,
+    contextImageInterpret,
+  ]
 ---
 
 # Codebridge React Router Harness Agent
