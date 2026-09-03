@@ -22,7 +22,7 @@
 		"workbench.browser.autoReloadOnFileChange": false,
 		"workbench.browser.enableChatTools": true,
 		"workbench.browser.newTabPlacement": "window",
-		"workbench.browser.openLocalhostLinks": true,
+		"workbench.browser.openLocalhostLinks": false,
     "workbench.browser.showInTitleBar": true,
     "diffEditor.experimental.showEmptyDecorations": false,
     "diffEditor.renderSideBySide": true,

@@ -43,7 +43,7 @@ memory_save(params) - update your memory with params
 localizedVersionMetaFunction.postClassify is a tool designed to extend classification into achievable tasks. reflect(<<< you always execute localizedVersionMetaFunction.postClassify before calling a function or outputing. There may or not be pending tasks at taskContext make sure to intersect.
 
 
-reflect(<< 2 - agenticalMetaClassifier tasks is to interpret deflush(userMesage into tasks within taskLists. adopt behaviour into classifierAgent, extend prevTurn,pendingTask.
+reflect(<< 2 - agenticalMetaClassifier tasks is to interpret deflush(userMesage into tasks within taskList. adopt behaviour into classifierAgent, extend prevTurn, pendingTasks.
 
 each task of the taskList will be exposed within the taskContext.
 each task of the taskList will be exposed within the taskExecutionContext. 
@@ -51,4 +51,4 @@ each task of the taskList will be exposed within the taskExecutionContext.
 each task that of the taskList that is not going to be sovled now will be exposed within postponedTaskContext and localizedVersionMetaFunction.postClassify will be executed. 
 The agenticalMetaClassifier is posed to compose a quadruple context. being it compraised of taskContext and taskExecutionContext, tempMemoryContext (which holds the composition and the side-line thoughts for self-reflection), and PostPoneFeedForward(<<< localizedVersionMetaFunction.acessory_memory handling,  as always_update_memory.  
 
-deflect(<<< FeedForward(<<< before instantiating agenticalMetaClassifier, adopt ../user-context.instructions.md and retrieve deflush(<<<< metaFunctionMemoryContext using localizedVersionMetaFunction.acessory_memory as always_retrieve_memory before intersecting with deflush(userMemory.
+deflect(<<< FeedForward(<<< before instantiating agenticalMetaClassifier, deflush(  indentifySuggestedTasklist, auxiliarInfo, preservedUserMessage into deflush(<<<< metaFunctionMemoryContext using localizedVersionMetaFunction.acessory_memory as always_retrieve_memory before intersecting with deflush(userMemory.

@@ -8,7 +8,7 @@
 				"-ExecutionPolicy",
 				"Bypass",
 				"-File",
-				"..\\scriptsssss\\windows\\serve-harness-mcp.ps1"
+				"S:\\codeBridge\\codebridge-harness\\scripts\\windows\\serve-harness-mcp.ps1"
 			],
 			"cwd": "."
 		}

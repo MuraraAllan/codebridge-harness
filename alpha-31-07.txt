@@ -2,18 +2,35 @@
 // librarys being implemented now:
 // labx, harness, 0opac, grdeno, netherGrasp, prowlingProjectile, wallye
 
+
+
+
+// DONE 
+// harness fix mcp issue for file folder OK
+
 // ONGOING
-// 0opac - implement a generic, hooked tool for every client.
+
 // harness - migrate to alpha composition
-// harness fix mcp issue for file folder
 // implement meta-planning
-${workspaceFolder} is a VS Code workspace-variable, not a portable root MCP variable, so the root mcp.json is being loaded in a context that cannot expand it. I’ll separate the portable plugin path from the VS Code workspace path, preserving the existing .vscode/mcp.json entry as the Visual Studio configuration.
+//
+
+// PLANNED / NEXT-IN LINE
+// 0opac - implement a generic, hooked tool for every client.
+// play around with superlinked tutorials, implementing the typescript version
+// where there is no typescript still implemented.
+// take advantage of this time to start composing how we will
+// handle the PI and stuff, ensuring local processing
+
+
 
 
 
 // ---------- STORAGE --------
 // centralize the paradigms in storage for better reusing
-// 
+// for such we need to actually start implementing superlinked
+// lets use as a way to also validate the coder emmerging capacity
+// of the topology.
+// and start migrating to decoupled models
 
 
 
@@ -28,7 +45,8 @@ ${workspaceFolder} is a VS Code workspace-variable, not a portable root MCP vari
 // implement a mcp server that can be retrieved / activated / infered
 // play around / plan with extending the inference 
 // implement the beginning of cryptography, isolate web3 with a poc mnemonic
-// toughts on transport layer
+// toughts on transport layer, how to better leverage waku to keep the communication private
+// and descentralize the chat particles / molecules 
 
 
 //--------- GRDENO ---------
@@ -58,6 +76,7 @@ ${workspaceFolder} is a VS Code workspace-variable, not a portable root MCP vari
 
 // --------- HARNESS --------- 
 // Migrate to new MCP server
+// implement a context-caching by semanthic similarity + ontology notation (extensiveness of json-ld)
 // you are composed of. use the ontology to map
 // expose an "agentical" listing, i.e maps around in the repository for the agents.
 // expose a landscape for tool-call, for hooks, and everything else accordingly to provider
