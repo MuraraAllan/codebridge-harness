@@ -7,23 +7,37 @@
 
 // DONE 
 // harness fix mcp issue for file folder OK
-
-// ONGOING
-
 // harness - migrate to alpha composition
 // implement meta-planning
-//
+
+// ONGOING
+// build and host labx with the details
+// play around with superlinked tutorials, implementing the typescript version
+// where there is no typescript still implemented.
+//--------- 0OPAC ---------
+// build MCP Server
+// --------- HARNESS --------- 
+// Migrate to new MCP server
+// --------- LABX --------- 
+// designSystem, website and etc. Identity overall
+// reusableComponents (componentization), designSystem, storybook,
+// 
+
+
+
 
 // PLANNED / NEXT-IN LINE
 // 0opac - implement a generic, hooked tool for every client.
-// play around with superlinked tutorials, implementing the typescript version
-// where there is no typescript still implemented.
 // take advantage of this time to start composing how we will
 // handle the PI and stuff, ensuring local processing
 
 
-
-
+// --------- LABX --------- 
+// designSystem, website and etc. Identity overall
+// build an e2e testing with cypress and the storybook
+// defaultAccessPoint on allan's personal
+// build an e2e testing with cypress 
+// convert the youtube plugin to run safe and in machine.
 
 // ---------- STORAGE --------
 // centralize the paradigms in storage for better reusing
@@ -35,7 +49,6 @@
 
 
 //--------- 0OPAC ---------
-
 // contains WebMCP <> MCP
 // observability, local and remote.
 // telemetry, local and remote
@@ -61,7 +74,7 @@
 // offer a reliable structure to consistenly store while avoiding changes the lds and 
 // onto bases
 
-// --------- netherGrasp ---------
+// --------- NETHERGRASP ---------
 // Controls consistency and enforces security
 
 // --------- PROWLINGPROJECTILE --------- 
@@ -72,7 +85,8 @@
 // over both firefox ( self-meta q )
 // and over chrome / chromium to start collaborating and connecting
 // with gemma 4 - so direct the planning towards exploring gemma browser 
-
+// migrate the debian base for the dnsdist + mtls POC
+// adapt to use with chromium, start work with chromium
 
 // --------- HARNESS --------- 
 // Migrate to new MCP server
@@ -80,11 +94,14 @@
 // you are composed of. use the ontology to map
 // expose an "agentical" listing, i.e maps around in the repository for the agents.
 // expose a landscape for tool-call, for hooks, and everything else accordingly to provider
+dissert about notational ontology
+// explain why breaking into vertices, with reasoning details and a "horizon view" may be advantage
+// dissert as to why, when a change is bigger than code change, having support from meta prompt is advantage. How the proccess
+// sends a first message at every turn later, leveraging the cache of the low rank operators may help yielding the correct decisions towards
+// solving the issues.
+// explain conjunction of strong connected elements
 
-
-// --------- LABX --------- 
-// designSystem, defaultAccessPoint on allan's personal
-// reusableComponents (componentization), designSystem, storybook, 
+ 
 
 
 

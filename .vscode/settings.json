@@ -7,5 +7,6 @@
     ".claude/settings.json": true,
     "~/.claude/settings.json": true
   },
-  "github.copilot.chat.agentDebugLog.fileLogging.maxRetainedSessionLogs": 500
+  "github.copilot.chat.agentDebugLog.fileLogging.maxRetainedSessionLogs": 500,
+  "github.copilot.chat.executionSubagent.model": "gemini-3.8-flash"
 }

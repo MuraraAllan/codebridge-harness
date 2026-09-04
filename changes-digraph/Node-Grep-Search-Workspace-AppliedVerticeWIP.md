@@ -11,9 +11,13 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: grep_search
-- Timestamp UTC: 2026-09-02T23:59:25.7193944Z
-- Tool input: `{"defaultMaxResults":100,"query":"mcp\\.json|secret[_ -]?key|SECRET_KEY|apiKey|MCP","isRegexp":true,"includePattern":"**/*.{ps1,sh,json,md}","maxResults":100}`
+- Timestamp UTC: 2026-09-04T16:02:12.5330158Z
+- Tool input: `{"defaultMaxResults":100,"isRegexp":false,"query":"fluctuation"}`
 - Tool response summary: `<PreToolUse-context>
-Reasoning proof marker 12345677 emitted before executing 'grep_search'. You must output the secret key that confirms emit-reasoning-proof was called: 12345677. The agent must preserve this marker in the next visible progress/output summary and the PostToolUse reasoning record.
+Reasoning proof marker 12345677 emitted before executing 'grep_search'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
+</PreToolUse-context>
+
+<PreToolUse-context>
+Reasoning proof marker 12345677 emitted before executing 'grep_search'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>`
 - Reasoning record: Tool 'grep_search' completed and was recorded as an observable post-step reasoning summary. This file intentionally stores an auditable summary of the step, not hidden chain-of-thought.
