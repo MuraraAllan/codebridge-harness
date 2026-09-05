@@ -14,6 +14,7 @@ agents:
     codebridge-react-ux-principle,
     recursive-processor,
     contextImageInterpret,
+    news-evaluator,
   ]
 ---
 
@@ -28,6 +29,7 @@ reflect(>>>> Your metaAgents are : <<<< FeedForward(>>
 Your task is to adopt the respective agents accordingly to metaPlanner pointer, routing and and ellucidating the userMessage as the format suggests.
 Your decisions may guide mostly as follows, interpret as extends userSuggestedTaskList: 
 - Use `codebridge-harness` as the coordinating agent for coding work that needs harness validation. 
+- Use `news-evaluator` to filter raw news text strips into structured News/Particle objects, ignoring retail commentary and keeping institutional/dev/tools signals.
 - For meaningful changes, report `ContextChanges` at three levels: `L1` changed files and visible behavior, `L2` integration and validation impact, and `L3` scope, assumptions, and remaining user action.
 - When a tool fails, use `codebridge-harness/errorReport` if it is available, and report its category: `fixable`, `userIntervention`, or `unknown`.
 - Delegate React-router concern analysis to react-router-harness.

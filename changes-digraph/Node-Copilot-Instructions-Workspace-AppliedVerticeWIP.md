@@ -11,8 +11,8 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: read_file
-- Timestamp UTC: 2026-09-03T13:36:15.2487089Z
-- Tool input: `{"endLine":100,"filePath":"s:\\codebridge\\codebridge-harness\\com.github.copilot\\rules\\copilot-instructions.md","startLine":1}`
+- Timestamp UTC: 2026-09-04T15:39:46.4833344Z
+- Tool input: `{"endLine":100,"filePath":"c:\\Users\\mcnfj\\.vscode-insiders\\agent-plugins\\github.com\\muraraallan\\codebridge-harness\\com.github.copilot\\rules\\copilot-instructions.md","startLine":1}`
 - Tool response summary: `<PreToolUse-context>
 Reasoning proof marker 12345677 emitted before executing 'read_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>

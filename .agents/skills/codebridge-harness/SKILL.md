@@ -1,11 +1,4 @@
 ---
-name: User context
-description: Workspace-level guidance for reporting task progress, contextual changes, and failures. Persona adoption.
-applyTo: "**"
----
-
-# User Context Instructions
----
 name: codebridge-harness
 description: "Primary entrypoint for this workspace. Validate and maintain the agent-hook harness, then route work to the approved specialist agents."
 user-invocable: true

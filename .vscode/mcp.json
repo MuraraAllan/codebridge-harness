@@ -1,14 +1,10 @@
 {
   "servers": {
     "codebridge-harness": {
-      "command": "powershell.exe",
+      "command": "node",
       "cwd": ".",
       "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "S:\\codeBridge\\codebridge-harness\\scripts\\windows\\serve-harness-mcp.ps1"
+        "./mcp-server/src/server.js"
       ]
     }
   }

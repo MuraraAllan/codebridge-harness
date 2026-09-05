@@ -92,11 +92,11 @@ $commitContextAgent = Get-Content -Raw -LiteralPath $commitContextAgentPath
 if ($commitContextAgent -notmatch "(?m)^name:\s*commit-context-harness\r?$") {
     throw "Commit-context agent does not define the expected name."
 }
-if ($commitContextAgent -notmatch "(?ms)hooks:.*?SessionStart.*?emit-commit-context\.ps1") {
-    throw "Commit-context agent does not define its SessionStart hook (emit-commit-context.ps1)."
+if ($commitContextAgent -notmatch "(?ms)hooks:.*?SessionStart.*?emit-commit-context(\.ps1|\.js)?") {
+    throw "Commit-context agent does not define its SessionStart hook (emit-commit-context)."
 }
-if ($commitContextAgent -notmatch "(?ms)hooks:.*?PostToolUse.*?emit-changes-digraph-node\.ps1") {
-    throw "Commit-context agent does not define its PostToolUse hook (emit-changes-digraph-node.ps1)."
+if ($commitContextAgent -notmatch "(?ms)hooks:.*?PostToolUse.*?emit-changes-digraph-node(\.ps1|\.js)?") {
+    throw "Commit-context agent does not define its PostToolUse hook (emit-changes-digraph-node)."
 }
 
 $recursiveAgent = Get-Content -Raw -LiteralPath $recursiveAgentPath
@@ -130,9 +130,9 @@ foreach ($path in $principleAgentPaths) {
 foreach ($agentName in $principleAgentHookPaths.Keys) {
     $principleAgentPath = $principleAgentPaths | Where-Object { $_ -match "$agentName\.agent\.md$" }
     $principleAgent = Get-Content -Raw -LiteralPath $principleAgentPath
-    $hookFileName = [System.IO.Path]::GetFileName($principleAgentHookPaths[$agentName])
+    $hookBaseName = [System.IO.Path]::GetFileNameWithoutExtension($principleAgentHookPaths[$agentName])
 
-    if ($principleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?$([regex]::Escape($hookFileName))") {
+    if ($principleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?$([regex]::Escape($hookBaseName))") {
         throw "Principle agent does not define its SessionStart context hook: $agentName"
     }
 }
@@ -197,15 +197,15 @@ $claudeHooks = Get-Content -Raw -LiteralPath $claudeHooksPath | ConvertFrom-Json
 if (-not $claudeHooks.hooks.PostToolUse) {
     throw "Claude hook configuration does not define PostToolUse."
 }
-if (-not ($claudeHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
-    throw "Claude hook configuration does not register emit-changes-digraph-node.ps1."
+if (-not ($claudeHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node" })) {
+    throw "Claude hook configuration does not register emit-changes-digraph-node."
 }
 $workspaceHooks = Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-harness.json") | ConvertFrom-Json
-if (-not ($workspaceHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
-    throw "Workspace hook configuration does not register emit-changes-digraph-node.ps1."
+if (-not ($workspaceHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node" })) {
+    throw "Workspace hook configuration does not register emit-changes-digraph-node."
 }
 $rootHooks = Get-Content -Raw -LiteralPath $rootHooksPath | ConvertFrom-Json
-if (-not ($rootHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($rootHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node\.ps1" })) {
+if (-not ($rootHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof" }) -or -not ($rootHooks.hooks.PostToolUse | Where-Object { $_.command -match "emit-changes-digraph-node" })) {
     throw "Root hook configuration does not register reasoning proof and post reasoning hooks."
 }
 
@@ -226,18 +226,18 @@ if ($pluginDefinition.skills -notcontains ".agents/skills/react-principles/SKILL
 if (-not $claudeHooks.hooks.PreToolUse -or -not ((Get-Content -Raw -LiteralPath (Join-Path $workspaceRoot ".hooks\codebridge-harness.json") | ConvertFrom-Json).hooks.PreToolUse)) {
     throw "PreToolUse must be enabled in both repository hook configurations."
 }
-if (-not ($claudeHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($workspaceHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" })) {
-    throw "PreToolUse must register emit-reasoning-proof.ps1 in both repository hook configurations."
+if (-not ($claudeHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof" }) -or -not ($workspaceHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof" })) {
+    throw "PreToolUse must register emit-reasoning-proof in both repository hook configurations."
 }
 
 $pluginHooks = Get-Content -Raw -LiteralPath $pluginHooksPath | ConvertFrom-Json
-if (-not $pluginHooks.hooks.PreToolUse -or -not ($pluginHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($pluginHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{CLAUDE_PLUGIN_ROOT\}' })) {
-    throw "Claude-format plugin hooks must use CLAUDE_PLUGIN_ROOT."
+if (-not $pluginHooks.hooks.PreToolUse -or -not ($pluginHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof" }) -or -not ($pluginHooks.hooks.PostToolUse | Where-Object { $_.command -match 'emit-changes-digraph-node' })) {
+    throw "Claude-format plugin hooks must register emit-changes-digraph-node."
 }
 
 $copilotExtensionHooks = Get-Content -Raw -LiteralPath $copilotExtensionHooksPath | ConvertFrom-Json
-if (-not $copilotExtensionHooks.hooks.PreToolUse -or -not ($copilotExtensionHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof\.ps1" }) -or -not ($copilotExtensionHooks.hooks.PostToolUse | Where-Object { $_.command -match '\$\{PLUGIN_ROOT\}' })) {
-    throw "Copilot extension plugin hooks must use PLUGIN_ROOT."
+if (-not $copilotExtensionHooks.hooks.PreToolUse -or -not ($copilotExtensionHooks.hooks.PreToolUse | Where-Object { $_.command -match "emit-reasoning-proof" }) -or -not ($copilotExtensionHooks.hooks.PostToolUse | Where-Object { $_.command -match 'emit-changes-digraph-node' })) {
+    throw "Copilot extension plugin hooks must register emit-changes-digraph-node."
 }
 
 $processInfo = New-Object System.Diagnostics.ProcessStartInfo

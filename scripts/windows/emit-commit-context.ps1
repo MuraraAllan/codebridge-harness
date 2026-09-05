@@ -1,14 +1,20 @@
 ﻿[CmdletBinding()]
 param()
 
-$rawInput = [Console]::In.ReadToEnd()
+$rawInput = ""
+if ([Console]::IsInputRedirected) {
+    $rawInput = [Console]::In.ReadToEnd()
+}
+
 $hookEventName = "SessionStart"
 
 if (-not [string]::IsNullOrWhiteSpace($rawInput)) {
-    $inputJson = $rawInput | ConvertFrom-Json
-    if ($inputJson.hook_event_name) {
-        $hookEventName = $inputJson.hook_event_name
-    }
+    try {
+        $inputJson = $rawInput | ConvertFrom-Json
+        if ($inputJson.hook_event_name) {
+            $hookEventName = $inputJson.hook_event_name
+        }
+    } catch {}
 }
 
 if ($hookEventName -ne "SessionStart") {

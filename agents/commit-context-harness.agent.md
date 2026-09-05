@@ -7,12 +7,12 @@ agents: []
 hooks:
   SessionStart:
     - type: command
-      command: "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\emit-commit-context.ps1"
+      command: "node .\\mcp-server\\src\\hooks\\emit-commit-context.js"
       cwd: "."
       timeout: 10
   PostToolUse:
     - type: command
-      command: "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\emit-changes-digraph-node.ps1"
+      command: "node .\\mcp-server\\src\\hooks\\emit-changes-digraph-node.js"
       cwd: "."
       timeout: 10
 ---

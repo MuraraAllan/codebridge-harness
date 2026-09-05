@@ -2,7 +2,7 @@
 
 chore: emit reasoning proof workspace
 
-L1: Tool 'read_file' ran as part of this change.
+L1: Tool 'create_file' ran as part of this change.
 L2: Recorded as a changes-digraph node via emit-changes-digraph-node.ps1.
 L3: No git invocation; node is a WIP draft pending review through commit-context-harness.
 
@@ -10,10 +10,14 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 
 - Proof marker: 12345677
 - Hook event: PostToolUse
-- Tool: read_file
-- Timestamp UTC: 2026-09-02T23:59:33.3026634Z
-- Tool input: `{"filePath":"s:\\codebridge\\codebridge-harness\\scripts\\windows\\emit-reasoning-proof.ps1","startLine":1,"endLine":160}`
+- Tool: create_file
+- Timestamp UTC: 2026-09-05T01:11:52.0215643Z
+- Tool input: `{"content":"import \"./emitReasoningProof.js\";\n","filePath":"s:\\codeBridge\\codebridge-harness\\mcp-server\\src\\hooks\\emit-reasoning-proof.js"}`
 - Tool response summary: `<PreToolUse-context>
-Reasoning proof marker 12345677 emitted before executing 'read_file'. You must output the secret key that confirms emit-reasoning-proof was called: 12345677. The agent must preserve this marker in the next visible progress/output summary and the PostToolUse reasoning record.
+Reasoning proof marker 12345677 emitted before executing 'create_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
+</PreToolUse-context>
+
+<PreToolUse-context>
+Reasoning proof marker 12345677 emitted before executing 'create_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>`
-- Reasoning record: Tool 'read_file' completed and was recorded as an observable post-step reasoning summary. This file intentionally stores an auditable summary of the step, not hidden chain-of-thought.
+- Reasoning record: Tool 'create_file' completed and was recorded as an observable post-step reasoning summary. This file intentionally stores an auditable summary of the step, not hidden chain-of-thought.
