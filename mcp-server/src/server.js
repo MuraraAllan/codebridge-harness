@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { handleErrorReport } from "./tools/errorReport.js";
 import { handleCommitContextChanges } from "./tools/commitContext.js";
 import { handleRunHarness } from "./tools/runHarness.js";
+import { handleExecutePowershell } from "./tools/executePowershell.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +50,19 @@ server.tool(
   },
   async (args) => {
     return handleCommitContextChanges(args);
+  }
+);
+
+server.tool(
+  "executePowershell",
+  "Execute a PowerShell command or script safely inside the MCP server process without running powershell from VS Code.",
+  {
+    command: z.string().optional().describe("PowerShell command string to execute"),
+    scriptPath: z.string().optional().describe("Path to PowerShell script file to run"),
+    args: z.array(z.string()).optional().describe("Arguments to pass to the PowerShell script"),
+  },
+  async (args) => {
+    return handleExecutePowershell(args);
   }
 );
 

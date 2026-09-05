@@ -3,13 +3,13 @@
     "PreToolUse": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\emit-reasoning-proof.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\emitReasoningProof.js",
         "cwd": ".",
         "timeout": 5
       },
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\validate-tool.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\validateTool.js",
         "cwd": ".",
         "timeout": 5
       }
@@ -17,7 +17,7 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\emit-commit-context.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\emitCommitContext.js",
         "cwd": ".",
         "timeout": 10
       }
@@ -25,21 +25,21 @@
     "UserPromptSubmit": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\emit-reasoning-proof.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\emitReasoningProof.js",
         "cwd": ".",
         "injectAsContext": true,
         "timeout": 5
       },
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\inject-context-image-interpret.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\injectContextImageInterpret.js",
         "cwd": ".",
         "injectAsContext": true,
         "timeout": 5
       },
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\inject-context-userinstructions.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\injectContextUserinstructions.js",
         "cwd": ".",
         "injectAsContext": true,
         "timeout": 5
@@ -48,13 +48,13 @@
     "PostToolUse": [
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\report-tool-error.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\reportToolError.js",
         "cwd": ".",
         "timeout": 5
       },
       {
         "type": "command",
-        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\\\scripts\\\\windows\\\\emit-changes-digraph-node.ps1",
+        "command": "node .\\mcp-server\\src\\hooks\\emitChangesDigraphNode.js",
         "cwd": ".",
         "timeout": 10
       }

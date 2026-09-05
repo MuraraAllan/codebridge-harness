@@ -7,7 +7,7 @@ agents: []
 hooks:
   SessionStart:
     - type: command
-      command: "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\windows\\inject-react-design-principle-context.ps1"
+      command: "node .\\mcp-server\\src\\hooks\\inject-react-design-principle-context.js"
       cwd: "."
       timeout: 5
 ---

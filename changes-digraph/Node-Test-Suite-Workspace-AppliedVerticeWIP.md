@@ -11,8 +11,8 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: read_file
-- Timestamp UTC: 2026-09-04T23:47:04.0544687Z
-- Tool input: `{"endLine":160,"filePath":"s:\\codeBridge\\codebridge-harness\\tests\\test-suite.json","startLine":81}`
+- Timestamp UTC: 2026-09-05T01:03:06.0528573Z
+- Tool input: `{"endLine":200,"filePath":"s:\\codeBridge\\codebridge-harness\\tests\\test-suite.json","startLine":121}`
 - Tool response summary: `<PreToolUse-context>
 Reasoning proof marker 12345677 emitted before executing 'read_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>
