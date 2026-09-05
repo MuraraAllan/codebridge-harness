@@ -11,6 +11,7 @@
 // implement meta-planning
 
 // ONGOING
+// still calling the emit changes and some powershell
 // build and host labx with the details
 // play around with superlinked tutorials, implementing the typescript version
 // where there is no typescript still implemented.

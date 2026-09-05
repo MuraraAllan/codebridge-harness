@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iliad Book II — The Catalog of Ships & Late Bronze Age Naval Explorer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #d4af37;
+      --bronze: #b87333;
+      --aegean: #0c1824;
+      --parchment: #f4edd9;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #080d14;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    .font-homeric { font-family: 'Cormorant Garamond', serif; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0c1824; }
+    ::-webkit-scrollbar-thumb { background: #b87333; border-radius: 3px; }
+    
+    .gold-glow {
+      text-shadow: 0 0 14px rgba(212, 175, 55, 0.45);
+    }
+    .bronze-border {
+      border: 1px solid rgba(184, 115, 51, 0.35);
+    }
+    .active-tab {
+      border-bottom: 2px solid #d4af37;
+      color: #d4af37;
+    }
+    #canvas3d {
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#080d14]">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-[#b87333]/30 bg-[#0c1824]/90 backdrop-blur sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-4">
+      <div class="w-10 h-10 rounded-full border border-[#d4af37] flex items-center justify-center bg-black/40">
+        <span class="font-cinzel text-[#d4af37] font-bold text-lg">Β</span>
+      </div>
+      <div>
+        <h1 class="font-cinzel text-lg md:text-xl font-bold tracking-widest text-[#d4af37] gold-glow uppercase">
+          νεῶν κατάλογος
+        </h1>
+        <p class="text-xs text-slate-400 font-homeric italic">
+          Homer’s Iliad Book 2.494–759 & Late Helladic III B/C Naval Archaeology
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Stats Tally -->
+    <div class="hidden lg:flex items-center space-x-6 text-xs border border-[#b87333]/30 px-4 py-1.5 rounded-lg bg-black/30">
+      <div><span class="text-slate-400 uppercase tracking-wider">Total Ships:</span> <span class="text-[#d4af37] font-bold text-sm">1,186</span></div>
+      <div class="text-[#b87333]">|</div>
+      <div><span class="text-slate-400 uppercase tracking-wider">Contingents:</span> <span class="text-[#d4af37] font-bold text-sm">29</span></div>
+      <div class="text-[#b87333]">|</div>
+      <div><span class="text-slate-400 uppercase tracking-wider">Commanders:</span> <span class="text-[#d4af37] font-bold text-sm">46</span></div>
+      <div class="text-[#b87333]">|</div>
+      <div><span class="text-slate-400 uppercase tracking-wider">Assembly:</span> <span class="text-[#38bdf8] font-bold">Aulis (Αὐλίς)</span></div>
+    </div>
+
+    <!-- View Switcher -->
+    <div class="flex space-x-2 text-xs font-cinzel">
+      <button onclick="switchView('viewer3d')" id="tab-viewer3d" class="px-3 py-1.5 rounded active-tab hover:text-[#d4af37] transition">3D Ship</button>
+      <button onclick="switchView('map')" id="tab-map" class="px-3 py-1.5 rounded text-slate-400 hover:text-[#d4af37] transition">Catalog Map</button>
+      <button onclick="switchView('archaeology')" id="tab-archaeology" class="px-3 py-1.5 rounded text-slate-400 hover:text-[#d4af37] transition">Artifacts & Draw</button>
+    </div>
+  </header>
+
+  <!-- Main Viewports Container -->
+  <main class="flex-1 relative flex overflow-hidden h-[calc(100vh-65px)]">
+
+    <!-- VIEW 1: 3D SHIP EXPLORER -->
+    <section id="view-viewer3d" class="flex-1 flex flex-col md:flex-row h-full relative">
+      <!-- 3D Canvas Container -->
+      <div class="flex-1 relative h-full">
+        <canvas id="canvas3d"></canvas>
+
+        <!-- 3D Overlay Controls & Hotspot Info -->
+        <div class="absolute top-4 left-4 pointer-events-none max-w-sm">
+          <div class="bg-[#0c1824]/85 border border-[#b87333]/40 p-4 rounded-lg backdrop-blur pointer-events-auto shadow-2xl">
+            <span class="text-[10px] font-cinzel tracking-widest text-[#d4af37] uppercase">Mycenaean Pentekontor (50 Oars)</span>
+            <h2 id="hotspot-title" class="font-cinzel text-lg font-bold text-white mt-0.5">Late Helladic III C War Galley</h2>
+            <p id="hotspot-desc" class="text-xs text-slate-300 font-homeric mt-1 leading-relaxed">
+              Carvel mortise-and-tenon construction with curved stempost (steira), steering pedalia, central mesodme mast step, and twenty-five oarsmen per broadside. Rotate with mouse or touch.
+            </p>
+            <div class="mt-3 flex flex-wrap gap-1.5">
+              <button onclick="focusComponent('prow')" class="text-[10px] px-2 py-1 bg-black/50 border border-slate-700 hover:border-[#d4af37] rounded text-slate-300">Prow & Finial</button>
+              <button onclick="focusComponent('sail')" class="text-[10px] px-2 py-1 bg-black/50 border border-slate-700 hover:border-[#d4af37] rounded text-slate-300">Brailed Sail</button>
+              <button onclick="focusComponent('oars')" class="text-[10px] px-2 py-1 bg-black/50 border border-slate-700 hover:border-[#d4af37] rounded text-slate-300">Rowing Thwarts</button>
+              <button onclick="focusComponent('stern')" class="text-[10px] px-2 py-1 bg-black/50 border border-slate-700 hover:border-[#d4af37] rounded text-slate-300">Aphlaston & Pedalia</button>
+              <button onclick="resetShipCamera()" class="text-[10px] px-2 py-1 bg-[#d4af37]/20 border border-[#d4af37] rounded text-[#d4af37]">Full Vessel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Toggles -->
+        <div class="absolute bottom-4 left-4 flex gap-2 pointer-events-auto">
+          <button onclick="toggleWireframe()" id="btn-wireframe" class="bg-[#0c1824]/80 text-xs px-3 py-1.5 rounded border border-slate-700 hover:border-[#d4af37] text-slate-300">
+            Wireframe: OFF
+          </button>
+          <button onclick="toggleSail()" id="btn-sail" class="bg-[#0c1824]/80 text-xs px-3 py-1.5 rounded border border-slate-700 hover:border-[#d4af37] text-slate-300">
+            Sail: HOISTED
+          </button>
+          <button onclick="toggleRowAnimation()" id="btn-row" class="bg-[#0c1824]/80 text-xs px-3 py-1.5 rounded border border-slate-700 hover:border-[#d4af37] text-slate-300">
+            Row Motion: ON
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Side Spec Drawer -->
+      <aside class="w-full md:w-96 border-l border-[#b87333]/30 bg-[#0c1824]/95 p-5 overflow-y-auto flex flex-col gap-4">
+        <div>
+          <span class="text-[10px] font-cinzel uppercase tracking-widest text-[#b87333]">Archaeological Hull Architecture</span>
+          <h3 class="font-cinzel text-lg font-bold text-[#d4af37]">Mycenaean Shipbuilding</h3>
+          <p class="text-xs text-slate-400 mt-1">Based on the Tragana pyxis (Pylos Museum) & Kynos naval sherd reconstructions.</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-3 bg-black/40 border border-slate-800 rounded">
+            <h4 class="font-bold text-slate-200">1. Keel & Shell-First Construction</h4>
+            <p class="text-slate-400 mt-1">
+              Planks joined edge-to-edge by pegged mortise-and-tenon joints (confirmed by Uluburun & Cape Gelidonya wrecks). No internal rib skeleton prior to planking.
+            </p>
+          </div>
+          <div class="p-3 bg-black/40 border border-slate-800 rounded">
+            <h4 class="font-bold text-slate-200">2. Homeric Nomenclature (Ὅμηρος)</h4>
+            <ul class="list-disc list-inside text-slate-400 mt-1 space-y-1 font-homeric text-sm">
+              <li><strong class="text-slate-200">Στεῖρα (Steira):</strong> Stempost / cutwater at prow.</li>
+              <li><strong class="text-slate-200">Τρόπις (Tropis):</strong> Keel running bow to stern.</li>
+              <li><strong class="text-slate-200">Ζυγά (Zyga):</strong> Thwarts/crossbeams seating rowers.</li>
+              <li><strong class="text-slate-200">Πηδάλια (Pedalia):</strong> Twin lateral steering oars.</li>
+              <li><strong class="text-slate-200">Μεσόδμη (Mesodme):</strong> Wooden crutch/step for the mast.</li>
+              <li><strong class="text-slate-200">Μιλτοπάρῃοι (Miltoparioi):</strong> "Red-cheeked" vermilion prow.</li>
+            </ul>
+          </div>
+          <div class="p-3 bg-black/40 border border-slate-800 rounded">
+            <h4 class="font-bold text-slate-200">3. Complement & Dimensions</h4>
+            <div class="grid grid-cols-2 gap-2 mt-1 text-slate-300">
+              <div>Length: <span class="text-[#d4af37]">~28–31 m</span></div>
+              <div>Beam: <span class="text-[#d4af37]">~3.8–4.2 m</span></div>
+              <div>Draft: <span class="text-[#d4af37]">~0.75 m</span></div>
+              <div>Crew: <span class="text-[#d4af37]">50 rowers + 2-4 officers</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contingent Ship Quick Select -->
+        <div class="mt-auto">
+          <label class="text-[10px] font-cinzel text-slate-400 uppercase block mb-1">Inspect Fleet Spec by Realm:</label>
+          <select id="ship-fleet-select" onchange="onShipSelectChange(this.value)" class="w-full bg-black/60 border border-[#b87333]/50 text-xs text-[#d4af37] p-2 rounded focus:outline-none">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+      </aside>
+    </section>
+
+    <!-- VIEW 2: HOMERIC CATALOG MAP & CENSUS -->
+    <section id="view-map" class="hidden flex-1 flex flex-col lg:flex-row h-full w-full">
+      <!-- Interactive SVG Map of the Aegean & Central Greece -->
+      <div class="flex-1 bg-[#060c14] relative overflow-hidden flex items-center justify-center p-4">
+        <svg id="aegean-map" viewBox="0 0 1000 850" class="w-full h-full max-h-[820px] select-none">
+          <defs>
+            <radialGradient id="water-grad" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stop-color="#0e1d2e" />
+              <stop offset="100%" stop-color="#050a10" />
+            </radialGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- Water Background -->
+          <rect width="1000" height="850" fill="url(#water-grad)" />
+
+          <!-- Aegean Grid Lines -->
+          <g stroke="#1e293b" stroke-width="0.5" stroke-dasharray="3,3">
+            <line x1="100" y1="0" x2="100" y2="850" />
+            <line x1="300" y1="0" x2="300" y2="850" />
+            <line x1="500" y1="0" x2="500" y2="850" />
+            <line x1="700" y1="0" x2="700" y2="850" />
+            <line x1="900" y1="0" x2="900" y2="850" />
+            <line x1="0" y1="200" x2="1000" y2="200" />
+            <line x1="0" y1="400" x2="1000" y2="400" />
+            <line x1="0" y1="600" x2="1000" y2="600" />
+            <line x1="0" y1="800" x2="1000" y2="800" />
+          </g>
+
+          <!-- Stylized Bronze Age Aegean Coastlines -->
+          <path d="M 120,40 Q 200,60 250,110 T 290,220 Q 340,240 370,290 T 320,380 Q 280,390 230,420 T 170,490 Q 220,530 260,560 T 310,650 Q 280,720 220,700 T 160,630 Q 130,550 110,480 Z" fill="#132337" stroke="#334155" stroke-width="1.5" />
+          <path d="M 330,340 Q 400,320 440,360 T 420,440 Q 360,450 330,400 Z" fill="#132337" stroke="#334155" stroke-width="1.5" /> <!-- Euboea -->
+          <path d="M 280,510 Q 360,540 370,620 T 300,700 Q 250,710 220,640 Z" fill="#132337" stroke="#334155" stroke-width="1.5" /> <!-- Peloponnese -->
+          <path d="M 400,780 Q 600,760 760,790 T 730,830 Q 550,830 380,820 Z" fill="#132337" stroke="#334155" stroke-width="1.5" /> <!-- Crete -->
+          <path d="M 820,680 Q 860,690 850,730 T 800,720 Z" fill="#132337" stroke="#334155" stroke-width="1.5" /> <!-- Rhodes -->
+          <path d="M 720,120 Q 770,180 820,240 T 800,360 Q 840,450 880,540 T 930,680 Q 880,720 840,640 Z" fill="#132337" stroke="#334155" stroke-width="1.5" /> <!-- Anatolian Shore / Troad -->
+
+          <!-- Destination: Troy (Ilion) -->
+          <g transform="translate(760, 160)">
+            <circle r="12" fill="#ef4444" fill-opacity="0.3" filter="url(#glow)"/>
+            <circle r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+            <text x="14" y="4" font-family="'Cinzel', serif" font-weight="bold" font-size="14" fill="#f87171">ILION (TROY)</text>
+          </g>
+
+          <!-- Assembly Point: Aulis -->
+          <g id="aulis-node" transform="translate(360, 360)">
+            <circle r="14" fill="#d4af37" fill-opacity="0.25" class="animate-ping" />
+            <circle r="8" fill="#d4af37" stroke="#000" stroke-width="1.5" />
+            <text x="12" y="-4" font-family="'Cinzel', serif" font-weight="bold" font-size="13" fill="#d4af37">AULIS (Αὐλίς)</text>
+            <text x="12" y="10" font-family="'Inter', sans-serif" font-size="9" fill="#94a3b8">Pan-Achaean Fleet Assembly</text>
+          </g>
+
+          <!-- Dynamic SVG Route Lines & Contingent Pins are injected by JS -->
+          <g id="svg-routes"></g>
+          <g id="svg-pins"></g>
+        </svg>
+
+        <!-- Map Legend -->
+        <div class="absolute bottom-4 left-4 bg-black/75 border border-[#b87333]/30 p-3 rounded backdrop-blur text-xs">
+          <div class="font-cinzel text-[#d4af37] font-semibold mb-1">Aegean War Network</div>
+          <div class="flex items-center space-x-2"><span class="w-2.5 h-2.5 rounded-full bg-[#d4af37]"></span> <span>Achaean Assembly (Aulis)</span></div>
+          <div class="flex items-center space-x-2 mt-1"><span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8]"></span> <span>Homeric Contingent Point</span></div>
+          <div class="flex items-center space-x-2 mt-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ef4444]"></span> <span>Troy Target Area</span></div>
+        </div>
+      </div>
+
+      <!-- Contingent Detail Sidebar -->
+      <aside class="w-full lg:w-[420px] bg-[#0c1824] border-l border-[#b87333]/30 flex flex-col h-full overflow-hidden">
+        <div class="p-4 border-b border-[#b87333]/20 bg-black/30">
+          <input type="text" id="contingent-search" oninput="filterContingents(this.value)" placeholder="Search leader, realm, or city..." class="w-full bg-[#080d14] border border-slate-700 rounded px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#d4af37]" />
+        </div>
+
+        <!-- Selected Contingent Feature Card -->
+        <div id="contingent-hero" class="p-5 border-b border-[#b87333]/30 bg-[#0e1f30]">
+          <!-- Injected via selectContingent() -->
+        </div>
+
+        <!-- List of all 29 Contingents -->
+        <div id="contingent-list" class="flex-1 overflow-y-auto divide-y divide-slate-800">
+          <!-- Populated via renderContingentList() -->
+        </div>
+      </aside>
+    </section>
+
+    <!-- VIEW 3: ARCHEOLOGICAL ARTIFACTS & DRAWING CANVAS -->
+    <section id="view-archaeology" class="hidden flex-1 flex flex-col lg:flex-row h-full w-full">
+      <!-- Drawing & Visual Analysis Workspace -->
+      <div class="flex-1 flex flex-col bg-[#050a10] p-4 relative">
+        <div class="flex items-center justify-between pb-3 border-b border-[#b87333]/30">
+          <div>
+            <h3 class="font-cinzel text-sm font-bold text-[#d4af37]">Comparative Archaeological Drawing Pad</h3>
+            <p class="text-xs text-slate-400">Sketch over archaeological ship motifs, isolate hull geometries, and measure proportional rations.</p>
+          </div>
+          <!-- Canvas Toolbar -->
+          <div class="flex items-center space-x-2 text-xs">
+            <label class="text-slate-400">Color:</label>
+            <input type="color" id="draw-color" value="#d4af37" class="w-6 h-6 bg-transparent cursor-pointer border-0 rounded" />
+            <label class="text-slate-400 ml-2">Stroke:</label>
+            <input type="range" id="draw-size" min="1" max="15" value="3" class="w-20 cursor-pointer accent-[#d4af37]" />
+            <button onclick="clearCanvas()" class="px-2.5 py-1 bg-red-900/40 hover:bg-red-800/60 border border-red-700/50 rounded text-red-200">Clear</button>
+            <button onclick="downloadSketch()" class="px-2.5 py-1 bg-[#d4af37]/20 hover:bg-[#d4af37]/30 border border-[#d4af37] rounded text-[#d4af37]">Save Sketch</button>
+          </div>
+        </div>
+
+        <!-- Interactive Canvas -->
+        <div class="flex-1 relative mt-3 border border-slate-800 rounded bg-[#0b131d] overflow-hidden flex items-center justify-center">
+          <canvas id="archaeology-canvas" class="cursor-crosshair absolute top-0 left-0 w-full h-full"></canvas>
+          <div id="canvas-archeo-bg" class="pointer-events-none opacity-40 flex items-center justify-center p-6 text-center">
+            <!-- Artifact background or schematic guide -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Archaeological Catalog & Reference Index -->
+      <aside class="w-full lg:w-96 bg-[#0c1824] border-l border-[#b87333]/30 p-4 overflow-y-auto space-y-4">
+        <div>
+          <span class="text-[10px] font-cinzel text-[#b87333] uppercase">Artifact Cross-Reference</span>
+          <h4 class="font-cinzel text-base font-bold text-[#d4af37]">Late Bronze Age Maritime Sources</h4>
+        </div>
+
+        <!-- Artifact Cards -->
+        <div onclick="loadArtifactTemplate('tragana')" class="p-3 bg-black/40 border border-slate-800 hover:border-[#d4af37] cursor-pointer rounded transition">
+          <div class="flex justify-between items-start">
+            <h5 class="font-bold text-xs text-white">The Tragana Pyxis</h5>
+            <span class="text-[10px] text-[#38bdf8]">LH IIIC (~1180 BCE)</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Discovered near Pylos. Ceramic cylindrical pyxis showing a 20-oared long galley with high sickle bow, stem ornament, and steering paddle.</p>
+          <span class="text-[10px] text-[#d4af37] mt-2 inline-block">Click to load overlay guide &rarr;</span>
+        </div>
+
+        <div onclick="loadArtifactTemplate('kynos')" class="p-3 bg-black/40 border border-slate-800 hover:border-[#d4af37] cursor-pointer rounded transition">
+          <div class="flex justify-between items-start">
+            <h5 class="font-bold text-xs text-white">Kynos Naval Krater</h5>
+            <span class="text-[10px] text-[#38bdf8]">LH IIIC Middle (Locris)</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Found at Livanates. Depicts armed Mycenaean sea-raiders on a galley with fighting deck (*ikria*), spears rack, and brailed sail rigging.</p>
+          <span class="text-[10px] text-[#d4af37] mt-2 inline-block">Click to load overlay guide &rarr;</span>
+        </div>
+
+        <div onclick="loadArtifactTemplate('pylos')" class="p-3 bg-black/40 border border-slate-800 hover:border-[#d4af37] cursor-pointer rounded transition">
+          <div class="flex justify-between items-start">
+            <h5 class="font-bold text-xs text-white">Pylos Hall 64 Ship Fresco</h5>
+            <span class="text-[10px] text-[#38bdf8]">LH IIIB (~1250 BCE)</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Palace of Nestor. Preserves multi-colored hull livery, vermilion bow stripe, and furled sails matching Homer's 'miltoparioi' formula.</p>
+          <span class="text-[10px] text-[#d4af37] mt-2 inline-block">Click to load overlay guide &rarr;</span>
+        </div>
+
+        <div onclick="loadArtifactTemplate('uluburun')" class="p-3 bg-black/40 border border-slate-800 hover:border-[#d4af37] cursor-pointer rounded transition">
+          <div class="flex justify-between items-start">
+            <h5 class="font-bold text-xs text-white">Uluburun Hull Timber Wreck</h5>
+            <span class="text-[10px] text-[#38bdf8]">Late 14th C. BCE</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Direct physical confirmation of cedar shell-first mortise-and-tenon joints, oak pegged tenons, and stone anchors used throughout Mycenaean trade networks.</p>
+          <span class="text-[10px] text-[#d4af37] mt-2 inline-block">Click to load overlay guide &rarr;</span>
+        </div>
+
+        <!-- Linear B Philology Note -->
+        <div class="p-3 bg-[#111e2e] border border-[#b87333]/40 rounded text-xs">
+          <h5 class="font-cinzel font-bold text-[#d4af37]">Linear B Naval Tablets</h5>
+          <p class="text-slate-300 font-homeric text-sm mt-1">
+            <strong>PY An 1:</strong> <code>e-re-ta</code> (erētai, "rowers") conscripted for departure to Pleuron.<br/>
+            <strong>PY Vn 46:</strong> Shipwright timbers allotted for building rudders and thwarts (<code>ka-pi-ri-ja</code>).
+          </p>
+        </div>
+      </aside>
+    </section>
+
+  </main>
+
+  <script>
+    /* =========================================================================
+       1. THE HOMERIC CATALOG OF SHIPS DATASET (ILIAD BOOK II.494-759)
+       29 Contingents, 46 Commanders, 1,186 Ships
+       ========================================================================= */
+    const CATALOG_DATA = [
+      {
+        id: 1,
+        realm: "Boeotia (Βοιωτοί)",
+        lines: "2.494–510",
+        commanders: ["Peneleos", "Leitus", "Arcesilaus", "Prothoenor", "Clonius"],
+        ships: 50,
+        menPerShip: 120,
+        totalMen: 6000,
+        capital: "Aulis / Thebes region",
+        coords: { x: 350, y: 370 },
+        greekExcerpt: "Βοιωτῶν μὲν Πηνέλεως καὶ Λήϊτος ἦρχον... τῶν μὲν πεντήκοντα νέες κίον, ἐν δὲ ἑκάστῃ κοῦροι Βοιωτῶν ἑκατὸν καὶ εἴκοσι βαῖνον.",
+        englishExcerpt: "Of the Boeotians Peneleos and Leitus were captains... and with them went fifty ships, and in each embarked one hundred and twenty young men of the Boeotians.",
+        archaeologicalSites: "Gla (LH IIIB fortress), Orchomenos, Thebes Kadmeia."
+      },
+      {
+        id: 2,
+        realm: "Minyans of Orchomenus (Ὀρχομενός)",
+        lines: "2.511–516",
+        commanders: ["Ascalaphus", "Ialmenus"],
+        ships: 30,
+        menPerShip: 50,
+        totalMen: 1500,
+        capital: "Orchomenus & Aspledon",
+        coords: { x: 320, y: 350 },
+        greekExcerpt: "οἳ δ' Ἀσpleδόνα ναῖον ἰδ' Ὀρχομενὸν Μινύειον...",
+        englishExcerpt: "And they that dwelt in Aspledon and Orchomenus of the Minyans were led by Ascalaphus and Ialmenus... thirty hollow ships in their array.",
+        archaeologicalSites: "Treasury of Minyas (tholos tomb), Kopais drainage network."
+      },
+      {
+        id: 3,
+        realm: "Phocians (Φωκῆες)",
+        lines: "2.517–526",
+        commanders: ["Schedius", "Epistrophus"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Cyparissus & Pytho (Delphi)",
+        coords: { x: 290, y: 360 },
+        greekExcerpt: "Φωκήων δ' αὖ Σχεδίος καὶ Ἐπίστροφος ἦρχον... τοῖς δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And of the Phocians Schedius and Epistrophus were captains... and with them followed forty black ships.",
+        archaeologicalSites: "Krisa, Kastrouli Mycenaean settlement."
+      },
+      {
+        id: 4,
+        realm: "Locrians (Λοκροί)",
+        lines: "2.527–535",
+        commanders: ["Ajax, son of Oïleus (Lesser Ajax)"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Cynus (Kynos), Opus",
+        coords: { x: 330, y: 330 },
+        greekExcerpt: "Λοκρῶν δ' ἡγεμόνευεν Ὀϊλῆος ταχὺς Αἴας... τῷ δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "Of the Locrians the swift son of Oïleus was leader, Ajax the lesser... and with him followed forty black ships.",
+        archaeologicalSites: "Kynos (source of the famous LH IIIC naval warrior krater)."
+      },
+      {
+        id: 5,
+        realm: "Euboeans / Abantes (Εὔβοια)",
+        lines: "2.536–545",
+        commanders: ["Elephenor"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Chalcis, Eretria, Histiaea",
+        coords: { x: 380, y: 360 },
+        greekExcerpt: "οἳ δ' Εὔβοιαν ἔχον μένεα πνείοντες Ἄβαντες... τῷ δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And they that held Euboea, the Abantes breathing fury... and with him followed forty black ships.",
+        archaeologicalSites: "Lefkandi (Xeropolis settlement), Amarynthos."
+      },
+      {
+        id: 6,
+        realm: "Athenians (Ἀθῆναι)",
+        lines: "2.546–556",
+        commanders: ["Menestheus"],
+        ships: 50,
+        menPerShip: 50,
+        totalMen: 2500,
+        capital: "Athens Acropolis",
+        coords: { x: 365, y: 440 },
+        greekExcerpt: "οἳ δ' ἄρ' Ἀθήνας εἶχον ἐϋκτίμενον πτολίεθρον... τῶν αὖθ' ἡγεμόνευ' υἱὸς Πετεῶο Μενεσθεύς.",
+        englishExcerpt: "And they that held Athens, the strong-built citadel... their leader was Menestheus, son of Peteos. Fifty black ships followed.",
+        archaeologicalSites: "Acropolis Mycenaean cyclopean spring fountain & bastion."
+      },
+      {
+        id: 7,
+        realm: "Salaminians (Σαλαμίς)",
+        lines: "2.557–558",
+        commanders: ["Ajax, son of Telamon (Great Ajax)"],
+        ships: 12,
+        menPerShip: 50,
+        totalMen: 600,
+        capital: "Salamis Island",
+        coords: { x: 345, y: 450 },
+        greekExcerpt: "Αἴας δ' ἐκ Σαλαμῖνος ἄγεν δυοκαίδεκα νῆας...",
+        englishExcerpt: "And Ajax led twelve ships from Salamis, and stationed them where the battalions of the Athenians were formed.",
+        archaeologicalSites: "Kanákia Mycenaean acropolis (palace of the Eurysakid dynasty)."
+      },
+      {
+        id: 8,
+        realm: "Argives & Tiryns (Ἄργος, Τίρυνς)",
+        lines: "2.559–568",
+        commanders: ["Diomedes", "Sthenelus", "Euryalus"],
+        ships: 80,
+        menPerShip: 50,
+        totalMen: 4000,
+        capital: "Argos, Tiryns of the Great Walls, Epidaurus",
+        coords: { x: 310, y: 480 },
+        greekExcerpt: "οἳ δ' Ἄργός τ' εἶχον Τίρυνθά τε τειχιόεσσαν... τοῖσι δ' ἅμ' ὀγδώκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And they that held Argos and Tiryns of the great walls... with these followed eighty black ships.",
+        archaeologicalSites: "Tiryns cyclopean tunnels, Larissa of Argos, Asine."
+      },
+      {
+        id: 9,
+        realm: "Mycenaeans (Μυκῆναι) — Supreme Command",
+        lines: "2.569–580",
+        commanders: ["Agamemnon, King of Men"],
+        ships: 100,
+        menPerShip: 50,
+        totalMen: 5000,
+        capital: "Mycenae, Corinth, Sicyon",
+        coords: { x: 300, y: 455 },
+        greekExcerpt: "τῶν ἑκατὸν νηῶν ἦρχε κρείων Ἀγαμέμνων Ἀτρεΐδης... πολὺ δὲ πλεῖστοι καὶ ἄριστοι λαοὶ ἕποντ'",
+        englishExcerpt: "Of these hundred ships the lord Agamemnon, son of Atreus, was captain... and far the most and best were the warriors that followed with him.",
+        archaeologicalSites: "Lion Gate, Grave Circle A & B, Palace Megaron of Mycenae."
+      },
+      {
+        id: 10,
+        realm: "Lacedaemonians / Sparta (Σπάρτη)",
+        lines: "2.581–590",
+        commanders: ["Menelaus"],
+        ships: 60,
+        menPerShip: 50,
+        totalMen: 3000,
+        capital: "Sparta, Pharis, Helos",
+        coords: { x: 280, y: 560 },
+        greekExcerpt: "οἳ δ' εἶχον κοίλην Λακεδαίμονα κητώεσσαν... τῶν οἱ ἀδελφεὸς ἦρχε βοὴν ἀγαθὸς Μενέλαος.",
+        englishExcerpt: "And they that held the hollow land of Lacedaemon... their leader was the brother of Agamemnon, Menelaus good at the war cry, with sixty ships.",
+        archaeologicalSites: "Menelaion, Ayios Vasileios Linear B palatial center."
+      },
+      {
+        id: 11,
+        realm: "Pylians (Πύλος)",
+        lines: "2.591–602",
+        commanders: ["Nestor, son of Neleus"],
+        ships: 90,
+        menPerShip: 50,
+        totalMen: 4500,
+        capital: "Pylos (Ano Englianos)",
+        coords: { x: 220, y: 550 },
+        greekExcerpt: "οἳ δὲ Πύλον τ' ἐνέμοντο καὶ Ἀρήνην ἐρατεινὴν... τοῦ δ' ἐνενήκοντα γλαφυραὶ νέες ἐστιχόωντο.",
+        englishExcerpt: "And they that dwelt in Pylos and lovely Arene... with Nestor ninety hollow ships moved in ranks.",
+        archaeologicalSites: "Palace of Nestor, Griffin Warrior Tomb, Hall 64 Fresco."
+      },
+      {
+        id: 12,
+        realm: "Arcadians (Ἀρκαδία)",
+        lines: "2.603–614",
+        commanders: ["Agapenor"],
+        ships: 60,
+        menPerShip: 50,
+        totalMen: 3000,
+        capital: "Tegea, Mantinea, Orchomenus",
+        coords: { x: 260, y: 500 },
+        greekExcerpt: "αὐτὸς γάρ σφιν δῶκεν ἄναξ ἀνδρῶν Ἀγαμέμνων νῆας ἐϋσσέλμους... ἐπεὶ οὔ σφι θαλάσσια ἔργα μεμήλει.",
+        englishExcerpt: "Sixty ships in number, furnished by Agamemnon himself, for the Arcadians cared naught for deeds of naval travel.",
+        archaeologicalSites: "Tegea Mycenaean tholoi, Mount Lykaion sanctuary."
+      },
+      {
+        id: 13,
+        realm: "Epeians of Elis (Ἦλις)",
+        lines: "2.615–624",
+        commanders: ["Amphimachus", "Thalpius", "Diores", "Polyxenus"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Elis, Buprasium",
+        coords: { x: 210, y: 470 },
+        greekExcerpt: "οἳ δὲ Βουπράσιόν τε καὶ Ἤλιδα δῖαν ἔναιον... τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And they that dwelt in Buprasium and sacred Elis... forty black ships followed them.",
+        archaeologicalSites: "Kladeos Mycenaean tombs, Olympia pre-historic stratum."
+      },
+      {
+        id: 14,
+        realm: "Dulichium & Echinades (Δουλίχιον)",
+        lines: "2.625–630",
+        commanders: ["Meges, son of Phyleus"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Echinades Islands",
+        coords: { x: 190, y: 410 },
+        greekExcerpt: "οἳ δ' ἐκ Δουλιχίοιο καὶ Ἐχινάων ἱεράων... τῷ δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And those from Dulichium and the sacred islands Echinades... Meges was captain, with forty black ships.",
+        archaeologicalSites: "Oxeia and Echinades coastal anchorages."
+      },
+      {
+        id: 15,
+        realm: "Cephallenians / Ithaca (Ἰθάκη)",
+        lines: "2.631–637",
+        commanders: ["Odysseus, of Many Wiles"],
+        ships: 12,
+        menPerShip: 50,
+        totalMen: 600,
+        capital: "Ithaca, Zacynthus, Samos (Cephalonia)",
+        coords: { x: 160, y: 400 },
+        greekExcerpt: "αὐτὰρ Ὀδυσσεὺς ἦγε Κεφαλλῆνας μεγαθύμους... τῷ δ' ἅμα νῆες ἕποντο δυοκαίδεκα μιλτοπάρῃοι.",
+        englishExcerpt: "And Odysseus led the great-souled Cephallenians... and with him followed twelve ships with vermilion prows (miltoparioi).",
+        archaeologicalSites: "School of Homer (Ayios Athanasios acropolis, Ithaca), Mazarakata."
+      },
+      {
+        id: 16,
+        realm: "Aetolians (Αἰτωλοί)",
+        lines: "2.638–644",
+        commanders: ["Thoas, son of Andraemon"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Pleuron, Calydon, Chalcis",
+        coords: { x: 230, y: 380 },
+        greekExcerpt: "Αἰτωλῶν δ' ἡγεῖτο Θόας Ἀνδραίμονος υἱός... τῷ δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And of the Aetolians Thoas was leader... forty black ships accompanied him.",
+        archaeologicalSites: "Thermon prehistoric megaron, Pleuron."
+      },
+      {
+        id: 17,
+        realm: "Cretans (Κρήτη)",
+        lines: "2.645–652",
+        commanders: ["Idomeneus & Meriones"],
+        ships: 80,
+        menPerShip: 50,
+        totalMen: 4000,
+        capital: "Knossos, Gortyn, Phaistos, Cydonia",
+        coords: { x: 520, y: 800 },
+        greekExcerpt: "Κρητῶν δ' Ἰδομενεὺς δουρικλυτὸς ἡγεμόνευε... τοῖσι δ' ἅμ' ὀγδώκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And of the Cretans Idomeneus the famed spearman was captain... eighty black ships followed.",
+        archaeologicalSites: "Knossos palace (LM IIIA/B reoccupation), Agia Triada sarcophagus."
+      },
+      {
+        id: 18,
+        realm: "Rhodians (Ῥόδος)",
+        lines: "2.653–670",
+        commanders: ["Tlepolemus, son of Heracles"],
+        ships: 9,
+        menPerShip: 50,
+        totalMen: 450,
+        capital: "Lindos, Ialysus, Camirus",
+        coords: { x: 820, y: 700 },
+        greekExcerpt: "Τληπόλεμος δ' Ἡρακλεΐδης ἠΰς τε μέγας τε ἐκ Ῥόδου ἐννέα νῆας ἄγεν...",
+        englishExcerpt: "Tlepolemus, son of Heracles, valiant and tall, led nine ships of the proud Rhodians.",
+        archaeologicalSites: "Ialysos Trianda Mycenaean cemetery, Lindos."
+      },
+      {
+        id: 19,
+        realm: "Symians (Σύμη)",
+        lines: "2.671–675",
+        commanders: ["Nireus, the Handsomest"],
+        ships: 3,
+        menPerShip: 50,
+        totalMen: 150,
+        capital: "Syme Island",
+        coords: { x: 780, y: 670 },
+        greekExcerpt: "Νιρεὺς αὖ Σύμηθεν ἄγε τρεῖς νῆας ἐΐσας, Νιρεὺς Ἀγλαΐης υἱὸς...",
+        englishExcerpt: "Nireus brought three shapely ships from Syme, Nireus son of Aglaia, the fairest man that came to Ilion.",
+        archaeologicalSites: "Syme prehistoric harbor."
+      },
+      {
+        id: 20,
+        realm: "Nisyrus, Cos & Calydnae (Νῆσοι)",
+        lines: "2.676–680",
+        commanders: ["Pheidippus & Antiphus"],
+        ships: 30,
+        menPerShip: 50,
+        totalMen: 1500,
+        capital: "Cos, Nisyrus, Carpathus",
+        coords: { x: 760, y: 640 },
+        greekExcerpt: "οἳ δ' ἄρα Νίσυρόν τ' εἶχον... τῶν αὖ Φείδιππός τε καὶ Ἄντιφος ἡγησάσθην... τριάκοντα γλαφυραὶ νέες.",
+        englishExcerpt: "Thirty hollow ships under Pheidippus and Antiphus from Cos and the Calydnian isles.",
+        archaeologicalSites: "Seraglio (Cos) Mycenaean settlement, Langada."
+      },
+      {
+        id: 21,
+        realm: "Myrmidons & Phthia (Φθία / Ἀχιλλεύς)",
+        lines: "2.681–694",
+        commanders: ["Achilles (Inactive at opening)"],
+        ships: 50,
+        menPerShip: 50,
+        totalMen: 2500,
+        capital: "Phthia, Hellas, Trachis",
+        coords: { x: 300, y: 280 },
+        greekExcerpt: "Μυρμιδόνες δὲ καλεῦντο καὶ Ἕλληνες καὶ Ἀχαιοί, τῶν αὖ πεντήκοντα νεῶν ἦν ἀρχὸς Ἀχιλλεύς.",
+        englishExcerpt: "They were called Myrmidons and Hellenes and Achaeans; of their fifty ships Achilles was leader.",
+        archaeologicalSites: "Phthiotic Thebes, Volos/Iolcos Kastro."
+      },
+      {
+        id: 22,
+        realm: "Phylace (Φυλάκη)",
+        lines: "2.695–710",
+        commanders: ["Protesilaus (fallen), succeeded by Podarces"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Phylace, Pyrasus, Pteleum",
+        coords: { x: 330, y: 270 },
+        greekExcerpt: "τῶν αὖ Πρωτεσίλαος ἀρήϊος ἡγεμόνευε... τῷ δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "The first ashore at Troy and first to die. Forty black ships under Podarces his brother.",
+        archaeologicalSites: "Magoula Zerelia, Pteleos tholos tombs."
+      },
+      {
+        id: 23,
+        realm: "Pherae (Φεραί)",
+        lines: "2.711–715",
+        commanders: ["Eumelus, son of Admetus"],
+        ships: 11,
+        menPerShip: 50,
+        totalMen: 550,
+        capital: "Pherae, Iolcos",
+        coords: { x: 340, y: 240 },
+        greekExcerpt: "τῶν ἦρχ' Ἀδμήτοιο φίλος γόνος ἕνδεκα νηῶν Εὔμηλος...",
+        englishExcerpt: "Eleven ships led by Eumelus, son of Admetus and noble Alcestis.",
+        archaeologicalSites: "Velestino (ancient Pherae), Dimini palace megaron."
+      },
+      {
+        id: 24,
+        realm: "Methone / Philoctetes (Μηθώνη)",
+        lines: "2.716–728",
+        commanders: ["Philoctetes (abandoned on Lemnos), Medon leading"],
+        ships: 7,
+        menPerShip: 50,
+        totalMen: 350,
+        capital: "Methone, Thaumacia, Meliboea",
+        coords: { x: 370, y: 220 },
+        greekExcerpt: "οἳ δ' ἄρα Μηθώνην καὶ Θαυμακίην ἐνέμοντο... ἑπτὰ νεῶν ἦρχον... ἐν δὲ ἑκάστῃ πεντήκοντα ἐρέται.",
+        englishExcerpt: "Seven ships, and in each fifty oarsmen who were skilled archers; but Philoctetes lay suffering in Lemnos.",
+        archaeologicalSites: "Thessalian coastal Magnesia."
+      },
+      {
+        id: 25,
+        realm: "Tricca & Oechalia (Τρίκκη)",
+        lines: "2.729–733",
+        commanders: ["Podalirius & Machaon (Sons of Asclepius)"],
+        ships: 30,
+        menPerShip: 50,
+        totalMen: 1500,
+        capital: "Tricca, Ithome",
+        coords: { x: 250, y: 230 },
+        greekExcerpt: "τοῖς δὲ δι' ἡγείσθην Ἀσκληπιοῦ δύο παῖδε... τριάκοντα γλαφυραὶ νέες.",
+        englishExcerpt: "Thirty hollow ships led by the twin physicians, sons of Asclepius.",
+        archaeologicalSites: "Trikala prehistoric settlement & early Asclepieion."
+      },
+      {
+        id: 26,
+        realm: "Ormenium & Titanus (Ὀρμένιον)",
+        lines: "2.734–737",
+        commanders: ["Eurypylus, son of Euaemon"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Ormenium, Fountain of Hypereia",
+        coords: { x: 310, y: 210 },
+        greekExcerpt: "τῶν ἦρχ' Εὐρύπυλος Εὐαίμονος ἀγλαὸς υἱός... τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "Eurypylus led forty black ships.",
+        archaeologicalSites: "Volos region settlement."
+      },
+      {
+        id: 27,
+        realm: "Gyrtone & Lapiths (Γυρτώνη)",
+        lines: "2.738–747",
+        commanders: ["Polypoetes & Leonteus"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Gyrtone, Argissa, Oloosson",
+        coords: { x: 290, y: 170 },
+        greekExcerpt: "οἳ δ' ἄρα Γυρτώνην εἶχον... τῶν αὖθ' ἡγεμόνευε μενεπτόλεμος Πολυpoίτης... τεσσαράκοντα νέες.",
+        englishExcerpt: "Forty ships of the mighty Lapith warriors under Polypoetes.",
+        archaeologicalSites: "Argissa Magoula, Elassona."
+      },
+      {
+        id: 28,
+        realm: "Cyphus & Enienes (Κύφος)",
+        lines: "2.748–755",
+        commanders: ["Guneus"],
+        ships: 22,
+        menPerShip: 50,
+        totalMen: 1100,
+        capital: "Cyphus, Dodona cold mountains",
+        coords: { x: 220, y: 180 },
+        greekExcerpt: "Γουνεὺς δ' ἐκ Κύφου ἦγε δύο καὶ εἴκοσι νῆας...",
+        englishExcerpt: "Guneus led two and twenty ships from Cyphus and the rugged heights of Dodona.",
+        archaeologicalSites: "Pindus mountain prehistoric pastoral networks."
+      },
+      {
+        id: 29,
+        realm: "Magnesians (Μάγνητες)",
+        lines: "2.756–759",
+        commanders: ["Prothous, son of Tenthredon"],
+        ships: 40,
+        menPerShip: 50,
+        totalMen: 2000,
+        capital: "Around the Peneus & Mount Pelion",
+        coords: { x: 360, y: 180 },
+        greekExcerpt: "Μαγνήτων δ' ἦρχε Πρόθοος Τενθρηδόνος υἱός... τῷ δ' ἅμα τεσσαράκοντα μέλαιναι νῆες ἕποντο.",
+        englishExcerpt: "And of the Magnesians Prothous was captain... and forty black ships followed with him.",
+        archaeologicalSites: "Mount Pelion caves and coastal anchorages."
+      }
+    ];
+
+    /* =========================================================================
+       2. THREE.JS 3D SHIP ENGINE (LATE HELLADIC III C WAR GALLEY)
+       ========================================================================= */
+    let scene, camera, renderer, controls;
+    let shipGroup, oarsGroup, sailMesh, seaMesh;
+    let isWireframe = false;
+    let isSailUp = true;
+    let isRowing = true;
+    let clock = new THREE.Clock();
+
+    function init3D() {
+      const canvas = document.getElementById("canvas3d");
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x060b12);
+      scene.fog = new THREE.FogExp2(0x060b12, 0.015);
+
+      camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+      camera.position.set(22, 14, 28);
+
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02; // Keep camera above waterline
+
+      // Lighting: Warm Mediterranean Sun + Cool Sky Ambient
+      const ambientLight = new THREE.AmbientLight(0x7dd3fc, 0.4);
+      scene.add(ambientLight);
+
+      const sunLight = new THREE.DirectionalLight(0xffedd5, 1.3);
+      sunLight.position.set(30, 45, 20);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      scene.add(sunLight);
+
+      const fillLight = new THREE.PointLight(0xd4af37, 0.6, 50);
+      fillLight.position.set(-15, 8, -10);
+      scene.add(fillLight);
+
+      // Sea Plane
+      const seaGeo = new THREE.PlaneGeometry(300, 300, 40, 40);
+      const seaMat = new THREE.MeshStandardMaterial({
+        color: 0x092032,
+        roughness: 0.15,
+        metalness: 0.7,
+        transparent: true,
+        opacity: 0.92,
+        wireframe: false
+      });
+      seaMesh = new THREE.Mesh(seaGeo, seaMat);
+      seaMesh.rotation.x = -Math.PI / 2;
+      seaMesh.position.y = -0.3;
+      scene.add(seaMesh);
+
+      buildMycenaeanGalley();
+
+      window.addEventListener("resize", onWindowResize);
+      animate3D();
+    }
+
+    function buildMycenaeanGalley() {
+      shipGroup = new THREE.Group();
+      scene.add(shipGroup);
+
+      // Materials
+      const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x271911, roughness: 0.8 }); // Black pitch / hull
+      const lightWoodMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 }); // Pine / Cedar
+      const redBowMat = new THREE.MeshStandardMaterial({ color: 0x8b1e1e, roughness: 0.6 }); // Vermilion / Miltos
+      const linenSailMat = new THREE.MeshStandardMaterial({ color: 0xe2d7c0, roughness: 0.9, side: THREE.DoubleSide });
+      const bronzeMat = new THREE.MeshStandardMaterial({ color: 0xb87333, metalness: 0.8, roughness: 0.3 });
+
+      // 1. KEEL (Tropis)
+      const keelGeo = new THREE.BoxGeometry(26, 0.6, 0.8);
+      const keel = new THREE.Mesh(keelGeo, darkWoodMat);
+      keel.position.y = 0.2;
+      shipGroup.add(keel);
+
+      // 2. HULL PLANKING (Shell-First Curved Extrusion)
+      const hullLength = 25;
+      const numRibs = 20;
+      for (let i = 0; i <= numRibs; i++) {
+        const u = i / numRibs;
+        const x = (u - 0.5) * hullLength;
+        const widthFactor = Math.sin(u * Math.PI);
+        const beam = 3.6 * widthFactor + 0.3;
+        const depth = 2.0 * Math.sin(u * Math.PI) + 0.4;
+
+        // Hull Ring Segment
+        const ringGeo = new THREE.BoxGeometry(hullLength / numRibs + 0.05, depth, beam);
+        const ringMat = (u > 0.85) ? redBowMat : darkWoodMat;
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.position.set(x, depth / 2 + 0.2, 0);
+        ring.castShadow = true;
+        ring.receiveShadow = true;
+        shipGroup.add(ring);
+      }
+
+      // 3. PROW STEMPOST (Steira) & Horned Aphlaston
+      const prowGroup = new THREE.Group();
+      prowGroup.position.set(hullLength / 2 + 0.5, 0.5, 0);
+
+      const stemGeo = new THREE.CylinderGeometry(0.3, 0.4, 4.5, 8);
+      const stem = new THREE.Mesh(stemGeo, redBowMat);
+      stem.rotation.z = -Math.PI / 4;
+      stem.position.set(1.5, 2.0, 0);
+      prowGroup.add(stem);
+
+      // Horned Bird Finial (Tragana Pyxis type)
+      const hornGeo = new THREE.ConeGeometry(0.35, 2.0, 6);
+      const horn = new THREE.Mesh(hornGeo, bronzeMat);
+      horn.rotation.z = -Math.PI / 3;
+      horn.position.set(3.2, 3.8, 0);
+      prowGroup.add(horn);
+      shipGroup.add(prowGroup);
+
+      // 4. STERNPOST (Aphlaston)
+      const sternGroup = new THREE.Group();
+      sternGroup.position.set(-hullLength / 2 - 0.5, 0.5, 0);
+      const sternGeo = new THREE.CylinderGeometry(0.3, 0.4, 5.0, 8);
+      const sternCurve = new THREE.Mesh(sternGeo, darkWoodMat);
+      sternCurve.rotation.z = Math.PI / 3.5;
+      sternCurve.position.set(-1.8, 2.5, 0);
+      sternGroup.add(sternCurve);
+      shipGroup.add(sternGroup);
+
+      // 5. THWARTS (Rowing Benches - Zyga)
+      const thwartCount = 20;
+      for (let i = 0; i < thwartCount; i++) {
+        const u = (i + 1) / (thwartCount + 1);
+        const x = (u - 0.5) * (hullLength - 4);
+        const width = 3.4 * Math.sin(u * Math.PI) + 0.2;
+        const bench = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, width), lightWoodMat);
+        bench.position.set(x, 1.4, 0);
+        shipGroup.add(bench);
+      }
+
+      // 6. MAST (Histos) & MAST-STEP (Mesodme)
+      const mastStep = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.2), darkWoodMat);
+      mastStep.position.set(1.5, 0.8, 0);
+      shipGroup.add(mastStep);
+
+      const mastGeo = new THREE.CylinderGeometry(0.2, 0.3, 14, 12);
+      const mast = new THREE.Mesh(mastGeo, lightWoodMat);
+      mast.position.set(1.5, 7.5, 0);
+      mast.castShadow = true;
+      shipGroup.add(mast);
+
+      // Yardarm (Keraiai)
+      const yardGeo = new THREE.CylinderGeometry(0.12, 0.15, 12, 8);
+      const yard = new THREE.Mesh(yardGeo, lightWoodMat);
+      yard.rotation.x = Math.PI / 2;
+      yard.position.set(1.5, 12.8, 0);
+      shipGroup.add(yard);
+
+      // Square Brailed Sail (Histion)
+      const sailGeo = new THREE.PlaneGeometry(11.5, 8.5, 16, 16);
+      // Give the sail wind belly curve
+      const pos = sailGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const px = pos.getX(i);
+        const py = pos.getY(i);
+        const distFromCenter = 1 - Math.abs(px / 5.75);
+        const distFromTop = 1 - (py + 4.25) / 8.5;
+        pos.setZ(i, Math.sin(distFromTop * Math.PI) * distFromCenter * 1.5);
+      }
+      sailGeo.computeVertexNormals();
+      sailMesh = new THREE.Mesh(sailGeo, linenSailMat);
+      sailMesh.rotation.y = Math.PI / 2;
+      sailMesh.position.set(2.4, 8.5, 0);
+      sailMesh.castShadow = true;
+      shipGroup.add(sailMesh);
+
+      // Rigging lines
+      const stayMat = new THREE.LineBasicMaterial({ color: 0xa8a29e, linewidth: 1 });
+      createStayLine(1.5, 13.5, 0, hullLength / 2 + 1, 1.5, 0, stayMat); // Forestay
+      createStayLine(1.5, 13.5, 0, -hullLength / 2 - 1, 2.0, 0, stayMat); // Backstay
+      createStayLine(1.5, 13.5, 0, 1.5, 1.6, 2.0, stayMat); // Shroud port
+      createStayLine(1.5, 13.5, 0, 1.5, 1.6, -2.0, stayMat); // Shroud stbd
+
+      // 7. STEERING PEDALIA (Twin Rudders)
+      const rudderGeo = new THREE.BoxGeometry(0.15, 4.5, 0.7);
+      const rudderPort = new THREE.Mesh(rudderGeo, lightWoodMat);
+      rudderPort.position.set(-hullLength / 2 + 2, 0.5, 1.8);
+      rudderPort.rotation.set(0.2, 0, 0.3);
+      shipGroup.add(rudderPort);
+
+      const rudderStbd = new THREE.Mesh(rudderGeo, lightWoodMat);
+      rudderStbd.position.set(-hullLength / 2 + 2, 0.5, -1.8);
+      rudderStbd.rotation.set(-0.2, 0, 0.3);
+      shipGroup.add(rudderStbd);
+
+      // 8. OARS (Eretmoi) - 25 Pairs = Pentekontor
+      oarsGroup = new THREE.Group();
+      const oarShaftGeo = new THREE.CylinderGeometry(0.06, 0.08, 6.5, 6);
+      const bladeGeo = new THREE.BoxGeometry(0.03, 1.2, 0.35);
+
+      for (let side = -1; side <= 1; side += 2) {
+        for (let i = 0; i < 22; i++) {
+          const u = (i + 1) / 24;
+          const x = (u - 0.5) * (hullLength - 5);
+          const singleOar = new THREE.Group();
+          const shaft = new THREE.Mesh(oarShaftGeo, lightWoodMat);
+          shaft.position.y = -2.5;
+          singleOar.add(shaft);
+
+          const blade = new THREE.Mesh(bladeGeo, lightWoodMat);
+          blade.position.y = -5.2;
+          singleOar.add(blade);
+
+          singleOar.position.set(x, 1.6, side * 1.8);
+          singleOar.rotation.z = 0.2;
+          singleOar.rotation.x = side * (Math.PI / 4 + 0.1);
+          singleOar.userData = { initialZ: singleOar.rotation.z, side: side, offset: i * 0.15 };
+          oarsGroup.add(singleOar);
+        }
+      }
+      shipGroup.add(oarsGroup);
+    }
+
+    function createStayLine(x1, y1, z1, x2, y2, z2, mat) {
+      const points = [new THREE.Vector3(x1, y1, z1), new THREE.Vector3(x2, y2, z2)];
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(lineGeo, mat);
+      shipGroup.add(line);
+    }
+
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+      const time = clock.getElapsedTime();
+
+      // Ship gentle pitch and roll
+      if (shipGroup) {
+        shipGroup.rotation.z = Math.sin(time * 0.8) * 0.02;
+        shipGroup.rotation.x = Math.cos(time * 0.6) * 0.03;
+        shipGroup.position.y = Math.sin(time * 1.2) * 0.12;
+      }
+
+      // Oar rowing kinematics
+      if (isRowing && oarsGroup) {
+        oarsGroup.children.forEach(oar => {
+          const t = time * 2.2 + oar.userData.offset;
+          oar.rotation.z = oar.userData.initialZ + Math.sin(t) * 0.25;
+          oar.rotation.y = Math.cos(t) * 0.15 * oar.userData.side;
+        });
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      const canvas = document.getElementById("canvas3d");
+      if (!canvas || !renderer || !camera) return;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    }
+
+    // Camera Focus Positions
+    function focusComponent(part) {
+      const t = { x: 0, y: 0, z: 0 };
+      const title = document.getElementById("hotspot-title");
+      const desc = document.getElementById("hotspot-desc");
+
+      if (part === 'prow') {
+        controls.target.set(13, 2, 0);
+        camera.position.set(22, 6, 8);
+        title.innerText = "Steira (Stempost) & Miltoparios";
+        desc.innerText = "Cutwater prow reinforced with red ochre (miltos) and zoomorphic bird finial as attested on the Kynos sherd and Tragana pyxis.";
+      } else if (part === 'sail') {
+        controls.target.set(1.5, 9, 0);
+        camera.position.set(6, 12, 18);
+        title.innerText = "Histion (Brailed Square Rig)";
+        desc.innerText = "Woven linen sail hoisted on a single yardarm with brail-rings (hyperai) allowing rapid furling without lowering the yard.";
+      } else if (part === 'oars') {
+        controls.target.set(0, 1.5, 0);
+        camera.position.set(0, 8, 14);
+        title.innerText = "Zyga (Thwarts) & Eretmoi (Oars)";
+        desc.innerText = "Twenty-five rowers per broadside seated on transverse thwarts, confirmed by the Linear B 'e-re-ta' rosters of the Palace of Nestor.";
+      } else if (part === 'stern') {
+        controls.target.set(-12, 2, 0);
+        camera.position.set(-20, 7, 8);
+        title.innerText = "Pedalia & Aphlaston";
+        desc.innerText = "Rising stern post terminating in curled aphlaston ribbons; twin lateral quarter-rudders held in rope grommets with steering tillers.";
+      }
+    }
+
+    function resetShipCamera() {
+      controls.target.set(0, 2, 0);
+      camera.position.set(22, 14, 28);
+      document.getElementById("hotspot-title").innerText = "Late Helladic III C War Galley";
+      document.getElementById("hotspot-desc").innerText = "Carvel mortise-and-tenon construction with curved stempost (steira), steering pedalia, central mesodme mast step, and twenty-five oarsmen per broadside.";
+    }
+
+    function toggleWireframe() {
+      isWireframe = !isWireframe;
+      shipGroup.traverse(child => {
+        if (child.isMesh && child !== seaMesh) child.material.wireframe = isWireframe;
+      });
+      document.getElementById("btn-wireframe").innerText = `Wireframe: ${isWireframe ? 'ON' : 'OFF'}`;
+    }
+
+    function toggleSail() {
+      isSailUp = !isSailUp;
+      if (sailMesh) sailMesh.visible = isSailUp;
+      document.getElementById("btn-sail").innerText = `Sail: ${isSailUp ? 'HOISTED' : 'FURLED'}`;
+    }
+
+    function toggleRowAnimation() {
+      isRowing = !isRowing;
+      document.getElementById("btn-row").innerText = `Row Motion: ${isRowing ? 'ON' : 'OFF'}`;
+    }
+
+    /* =========================================================================
+       3. INTERACTIVE AEGEAN MAP & CATALOG CENSUS
+       ========================================================================= */
+    const AULIS_COORDS = { x: 360, y: 360 };
+    const TROY_COORDS = { x: 760, y: 160 };
+
+    function initMap() {
+      const routesG = document.getElementById("svg-routes");
+      const pinsG = document.getElementById("svg-pins");
+      routesG.innerHTML = "";
+      pinsG.innerHTML = "";
+
+      // Route from Aulis to Troy (The Grand Pan-Achaean Fleet Crossing)
+      const mainPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      mainPath.setAttribute("d", `M ${AULIS_COORDS.x},${AULIS_COORDS.y} Q 540,240 ${TROY_COORDS.x},${TROY_COORDS.y}`);
+      mainPath.setAttribute("stroke", "#d4af37");
+      mainPath.setAttribute("stroke-width", "2.5");
+      mainPath.setAttribute("stroke-dasharray", "6,4");
+      mainPath.setAttribute("fill", "none");
+      mainPath.setAttribute("opacity", "0.85");
+      routesG.appendChild(mainPath);
+
+      // Render each contingent pin & sailing trail to Aulis
+      CATALOG_DATA.forEach(item => {
+        // Gathering feeder line to Aulis
+        const route = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        route.setAttribute("d", `M ${item.coords.x},${item.coords.y} Q ${(item.coords.x + AULIS_COORDS.x)/2 + 20},${(item.coords.y + AULIS_COORDS.y)/2} ${AULIS_COORDS.x},${AULIS_COORDS.y}`);
+        route.setAttribute("stroke", "#38bdf8");
+        route.setAttribute("stroke-width", "1");
+        route.setAttribute("stroke-dasharray", "3,3");
+        route.setAttribute("fill", "none");
+        route.setAttribute("opacity", "0.35");
+        route.setAttribute("id", `route-${item.id}`);
+        routesG.appendChild(route);
+
+        // Map Pin Node
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "cursor-pointer group");
+        g.setAttribute("onclick", `selectContingent(${item.id})`);
+
+        // Radius scaled by ship count
+        const r = Math.max(4, Math.sqrt(item.ships) * 1.5);
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", item.coords.x);
+        circle.setAttribute("cy", item.coords.y);
+        circle.setAttribute("r", r);
+        circle.setAttribute("fill", "#38bdf8");
+        circle.setAttribute("fill-opacity", "0.7");
+        circle.setAttribute("stroke", "#ffffff");
+        circle.setAttribute("stroke-width", "1");
+        circle.setAttribute("id", `pin-${item.id}`);
+
+        // Label
+        const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        txt.setAttribute("x", item.coords.x + r + 3);
+        txt.setAttribute("y", item.coords.y + 3);
+        txt.setAttribute("font-family", "'Inter', sans-serif");
+        txt.setAttribute("font-size", "9");
+        txt.setAttribute("fill", "#cbd5e1");
+        txt.textContent = `${item.realm.split(' ')[0]} (${item.ships})`;
+
+        g.appendChild(circle);
+        g.appendChild(txt);
+        pinsG.appendChild(g);
+      });
+
+      renderContingentList(CATALOG_DATA);
+      selectContingent(9); // Default to Agamemnon's Mycenae
+      populateShipFleetSelect();
+    }
+
+    function renderContingentList(items) {
+      const list = document.getElementById("contingent-list");
+      list.innerHTML = "";
+      items.forEach(c => {
+        const item = document.createElement("div");
+        item.className = "p-3 hover:bg-slate-800/60 cursor-pointer transition flex items-center justify-between";
+        item.onclick = () => selectContingent(c.id);
+        item.innerHTML = `
+          <div>
+            <div class="font-cinzel text-xs font-bold text-white">${c.id}. ${c.realm}</div>
+            <div class="text-[11px] text-slate-400 font-homeric">Leaders: ${c.commanders.join(', ')}</div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-bold text-[#d4af37]">${c.ships}</span>
+            <span class="text-[10px] text-slate-400 block">ships</span>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function selectContingent(id) {
+      const c = CATALOG_DATA.find(x => x.id === id);
+      if (!c) return;
+
+      // Update Map Highlights
+      CATALOG_DATA.forEach(x => {
+        const pin = document.getElementById(`pin-${x.id}`);
+        const route = document.getElementById(`route-${x.id}`);
+        if (pin) {
+          pin.setAttribute("fill", x.id === id ? "#d4af37" : "#38bdf8");
+          pin.setAttribute("fill-opacity", x.id === id ? "1" : "0.7");
+        }
+        if (route) {
+          route.setAttribute("stroke", x.id === id ? "#d4af37" : "#38bdf8");
+          route.setAttribute("stroke-width", x.id === id ? "2" : "1");
+          route.setAttribute("opacity", x.id === id ? "0.9" : "0.35");
+        }
+      });
+
+      // Update Sidebar Hero Display
+      const hero = document.getElementById("contingent-hero");
+      hero.innerHTML = `
+        <div class="flex items-start justify-between">
+          <span class="text-[10px] font-cinzel text-[#d4af37] uppercase tracking-wider">Contingent #${c.id} of 29</span>
+          <span class="text-[10px] bg-[#d4af37]/20 border border-[#d4af37]/50 text-[#d4af37] px-2 py-0.5 rounded font-cinzel">Iliad ${c.lines}</span>
+        </div>
+        <h3 class="font-cinzel text-base font-bold text-white mt-1">${c.realm}</h3>
+        <p class="text-xs text-slate-300 font-homeric mt-0.5 italic">Capital / Hub: ${c.capital}</p>
+
+        <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-700/60 text-center">
+          <div class="bg-black/40 p-2 rounded">
+            <span class="text-[10px] text-slate-400 uppercase block">Ships</span>
+            <span class="text-sm font-bold text-[#d4af37]">${c.ships}</span>
+          </div>
+          <div class="bg-black/40 p-2 rounded">
+            <span class="text-[10px] text-slate-400 uppercase block">Men / Hull</span>
+            <span class="text-sm font-bold text-white">${c.menPerShip}</span>
+          </div>
+          <div class="bg-black/40 p-2 rounded">
+            <span class="text-[10px] text-slate-400 uppercase block">Corps Est.</span>
+            <span class="text-sm font-bold text-[#38bdf8]">${c.totalMen.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div class="mt-3 text-xs">
+          <span class="text-slate-400 text-[10px] uppercase tracking-wider block">Commanders:</span>
+          <span class="text-slate-200 font-semibold">${c.commanders.join(" &bull; ")}</span>
+        </div>
+
+        <div class="mt-3 p-3 bg-black/50 border border-[#b87333]/30 rounded">
+          <p class="font-homeric text-xs text-[#d4af37] italic">"${c.greekExcerpt}"</p>
+          <p class="font-homeric text-xs text-slate-300 mt-1.5">"${c.englishExcerpt}"</p>
+        </div>
+
+        <div class="mt-3 text-[11px] text-slate-400">
+          <strong class="text-slate-300">Archaeological correlation:</strong> ${c.archaeologicalSites}
+        </div>
+      `;
+    }
+
+    function filterContingents(query) {
+      const q = query.toLowerCase();
+      const filtered = CATALOG_DATA.filter(c =>
+        c.realm.toLowerCase().includes(q) ||
+        c.commanders.some(cmd => cmd.toLowerCase().includes(q)) ||
+        c.capital.toLowerCase().includes(q)
+      );
+      renderContingentList(filtered);
+    }
+
+    function populateShipFleetSelect() {
+      const select = document.getElementById("ship-fleet-select");
+      select.innerHTML = "";
+      CATALOG_DATA.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.innerText = `${c.id}. ${c.realm} (${c.ships} ships, ${c.commanders[0]})`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onShipSelectChange(id) {
+      selectContingent(parseInt(id));
+      const c = CATALOG_DATA.find(x => x.id === parseInt(id));
+      if (c) {
+        document.getElementById("hotspot-title").innerText = `${c.realm} War Fleet`;
+        document.getElementById("hotspot-desc").innerText = `Commanded by ${c.commanders.join(', ')}. Contributing ${c.ships} black galleys (${c.menPerShip} oarsmen per ship) totaling ${c.totalMen.toLocaleString()} warriors toward the siege of Troy.`;
+      }
+    }
+
+    /* =========================================================================
+       4. ARCHEOLOGICAL DRAWING PAD & ANALYSIS CANVAS
+       ========================================================================= */
+    let drawCanvas, drawCtx;
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+
+    function initDrawCanvas() {
+      drawCanvas = document.getElementById("archaeology-canvas");
+      const parent = drawCanvas.parentElement;
+      drawCanvas.width = parent.clientWidth;
+      drawCanvas.height = parent.clientHeight;
+      drawCtx = drawCanvas.getContext("2d");
+      drawCtx.lineCap = "round";
+      drawCtx.lineJoin = "round";
+
+      drawCanvas.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        const rect = drawCanvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+      });
+
+      drawCanvas.addEventListener("mousemove", (e) => {
+        if (!isDrawing) return;
+        const rect = drawCanvas.getBoundingClientRect();
+        const curX = e.clientX - rect.left;
+        const curY = e.clientY - rect.top;
+
+        drawCtx.strokeStyle = document.getElementById("draw-color").value;
+        drawCtx.lineWidth = document.getElementById("draw-size").value;
+        drawCtx.beginPath();
+        drawCtx.moveTo(lastX, lastY);
+        drawCtx.lineTo(curX, curY);
+        drawCtx.stroke();
+
+        lastX = curX;
+        lastY = curY;
+      });
+
+      window.addEventListener("mouseup", () => isDrawing = false);
+    }
+
+    function clearCanvas() {
+      if (!drawCtx || !drawCanvas) return;
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    }
+
+    function downloadSketch() {
+      const link = document.createElement("a");
+      link.download = "mycenaean-ship-sketch-analysis.png";
+      link.href = drawCanvas.toDataURL();
+      link.click();
+    }
+
+    function loadArtifactTemplate(artifact) {
+      clearCanvas();
+      const bg = document.getElementById("canvas-archeo-bg");
+      if (artifact === 'tragana') {
+        bg.innerHTML = `
+          <div class="border border-[#d4af37]/40 p-6 rounded bg-black/60 max-w-lg">
+            <h4 class="font-cinzel text-lg text-[#d4af37] font-bold">Tragana Pyxis Schematic</h4>
+            <p class="text-xs text-slate-300 font-homeric mt-1">
+              Trace the crescent hull, high aphlaston stern, and 20 upright oarsman positions found on the cylindrical pyxis from Tholos Tomb 1 at Tragana.
+            </p>
+          </div>
+        `;
+      } else if (artifact === 'kynos') {
+        bg.innerHTML = `
+          <div class="border border-[#38bdf8]/40 p-6 rounded bg-black/60 max-w-lg">
+            <h4 class="font-cinzel text-lg text-[#38bdf8] font-bold">Kynos Krater Combat Deck</h4>
+            <p class="text-xs text-slate-300 font-homeric mt-1">
+              Trace the elevated forecastle (ikria), brailed sail sheets, and warriors with fringed tunics and hedgehog/feather helmets.
+            </p>
+          </div>
+        `;
+      } else if (artifact === 'pylos') {
+        bg.innerHTML = `
+          <div class="border border-[#ef4444]/40 p-6 rounded bg-black/60 max-w-lg">
+            <h4 class="font-cinzel text-lg text-[#ef4444] font-bold">Pylos Hall 64 Polychrome Livery</h4>
+            <p class="text-xs text-slate-300 font-homeric mt-1">
+              Trace the vermilion (miltos) waterline accent band and double steering-oar tillers reconstructed from the Palace of Nestor fragments.
+            </p>
+          </div>
+        `;
+      } else if (artifact === 'uluburun') {
+        bg.innerHTML = `
+          <div class="border border-green-500/40 p-6 rounded bg-black/60 max-w-lg">
+            <h4 class="font-cinzel text-lg text-green-400 font-bold">Mortise-and-Tenon Shell Assembly</h4>
+            <p class="text-xs text-slate-300 font-homeric mt-1">
+              Draw and measure the alternating oak tenon pins joining the Lebanese cedar hull strakes.
+            </p>
+          </div>
+        `;
+      }
+    }
+
+    /* =========================================================================
+       5. VIEW SWITCHING LOGIC
+       ========================================================================= */
+    function switchView(viewId) {
+      document.getElementById("view-viewer3d").classList.add("hidden");
+      document.getElementById("view-map").classList.add("hidden");
+      document.getElementById("view-archaeology").classList.add("hidden");
+
+      document.getElementById("tab-viewer3d").classList.remove("active-tab");
+      document.getElementById("tab-map").classList.remove("active-tab");
+      document.getElementById("tab-archaeology").classList.remove("active-tab");
+
+      document.getElementById(`view-${viewId}`).classList.remove("hidden");
+      document.getElementById(`tab-${viewId}`).classList.add("active-tab");
+
+      if (viewId === 'viewer3d') {
+        setTimeout(onWindowResize, 100);
+      } else if (viewId === 'archaeology') {
+        setTimeout(initDrawCanvas, 100);
+      }
+    }
+
+    // Initialize all components on DOM ready
+    window.addEventListener("DOMContentLoaded", () => {
+      init3D();
+      initMap();
+    });
+  </script>
+</body>
+</html>
