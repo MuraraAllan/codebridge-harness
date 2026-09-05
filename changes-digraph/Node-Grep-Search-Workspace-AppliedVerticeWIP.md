@@ -11,8 +11,8 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: grep_search
-- Timestamp UTC: 2026-09-04T16:02:12.5330158Z
-- Tool input: `{"defaultMaxResults":100,"isRegexp":false,"query":"fluctuation"}`
+- Timestamp UTC: 2026-09-05T00:22:23.6220829Z
+- Tool input: `{"defaultMaxResults":100,"isRegexp":false,"query":"PLUGIN_ROOT"}`
 - Tool response summary: `<PreToolUse-context>
 Reasoning proof marker 12345677 emitted before executing 'grep_search'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>

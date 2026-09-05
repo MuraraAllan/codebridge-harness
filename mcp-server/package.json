@@ -1,0 +1,16 @@
+{
+  "name": "codebridge-harness-mcp",
+  "version": "1.0.0",
+  "description": "Codebridge Harness MCP Server and hook orchestration in Node.js",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "test": "node ./test-mcp.js",
+    "inspector": "npx @modelcontextprotocol/inspector node ./src/server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "zod": "^3.24.2"
+  }
+}

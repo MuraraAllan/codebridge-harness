@@ -11,8 +11,8 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: read_file
-- Timestamp UTC: 2026-09-03T13:33:57.5223600Z
-- Tool input: `{"endLine":100,"filePath":"s:\\codeBridge\\codebridge-harness\\scripts\\windows\\emit-changes-digraph-node.ps1","startLine":1}`
+- Timestamp UTC: 2026-09-04T23:49:14.9964157Z
+- Tool input: `{"endLine":100,"filePath":"s:\\codeBridge\\codebridge-harness\\scripts\\windows\\emit-changes-digraph-node.ps1","startLine":30}`
 - Tool response summary: `<PreToolUse-context>
 Reasoning proof marker 12345677 emitted before executing 'read_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>

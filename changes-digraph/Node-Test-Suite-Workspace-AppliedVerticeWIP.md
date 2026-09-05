@@ -11,9 +11,13 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: read_file
-- Timestamp UTC: 2026-09-02T23:59:33.3781275Z
-- Tool input: `{"filePath":"s:\\codebridge\\codebridge-harness\\tests\\test-suite.json","startLine":1,"endLine":100}`
+- Timestamp UTC: 2026-09-04T23:47:04.0544687Z
+- Tool input: `{"endLine":160,"filePath":"s:\\codeBridge\\codebridge-harness\\tests\\test-suite.json","startLine":81}`
 - Tool response summary: `<PreToolUse-context>
-Reasoning proof marker 12345677 emitted before executing 'read_file'. You must output the secret key that confirms emit-reasoning-proof was called: 12345677. The agent must preserve this marker in the next visible progress/output summary and the PostToolUse reasoning record.
+Reasoning proof marker 12345677 emitted before executing 'read_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
+</PreToolUse-context>
+
+<PreToolUse-context>
+Reasoning proof marker 12345677 emitted before executing 'read_file'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>`
 - Reasoning record: Tool 'read_file' completed and was recorded as an observable post-step reasoning summary. This file intentionally stores an auditable summary of the step, not hidden chain-of-thought.
