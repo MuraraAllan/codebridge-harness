@@ -1,0 +1,2365 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Overview
+
+Servers provide the fundamental building blocks for adding context to language models via
+MCP. These primitives enable rich interactions between clients, servers, and language
+models:
+
+* **Prompts**: Pre-defined templates or instructions that guide language model
+  interactions
+* **Resources**: Structured data or content that provides additional context to the model
+* **Tools**: Executable functions that allow models to perform actions or retrieve
+  information
+
+Each primitive can be summarized in the following control hierarchy:
+
+| Primitive | Control                | Description                                        | Example                         |
+| --------- | ---------------------- | -------------------------------------------------- | ------------------------------- |
+| Prompts   | User-controlled        | Interactive templates invoked by user choice       | Slash commands, menu options    |
+| Resources | Application-controlled | Contextual data attached and managed by the client | File contents, git history      |
+| Tools     | Model-controlled       | Functions exposed to the LLM to take actions       | API POST requests, file writing |
+
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Discovery
+
+<div id="enable-section-numbers" />
+
+`server/discover` lets a client query a server's supported protocol versions,
+capabilities, and identity before sending any other requests. Servers **MUST**
+implement it.
+
+## Request
+
+The request carries no body parameters beyond the standard `_meta`:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": "discover-1",
+  "method": "server/discover",
+  "params": {
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientInfo": {
+        "name": "ExampleClient",
+        "version": "1.0.0"
+      },
+      "io.modelcontextprotocol/clientCapabilities": {}
+    }
+  }
+}
+```
+
+## Response
+
+The server replies with its supported protocol versions, capabilities, and
+identity. This operation supports [caching](/specification/2026-07-28/server/utilities/caching).
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": "discover-1",
+  "result": {
+    "resultType": "complete",
+    "supportedVersions": ["2026-07-28"],
+    "capabilities": {
+      "tools": {},
+      "resources": {}
+    },
+    "_meta": {
+      "io.modelcontextprotocol/serverInfo": {
+        "name": "ExampleServer",
+        "version": "1.0.0"
+      }
+    },
+    "instructions": "This server provides weather and resource utilities.",
+    "ttlMs": 3600000,
+    "cacheScope": "public"
+  }
+}
+```
+
+## When to Call
+
+Calling `server/discover` is optional for clients — a client may invoke any
+RPC inline and handle
+[`UnsupportedProtocolVersionError`](/specification/2026-07-28/schema#unsupportedprotocolversionerror)
+if the server does not support the requested version. However, `server/discover`
+is useful in two scenarios:
+
+* **Presenting server information.** While a client doesn't need to call
+  `server/discover` to use the server, it's a convenient way to retrieve the
+  server's identity, capabilities, and supported versions in a single request.
+  For example, a client can present the capabilities a server supports from a
+  single `server/discover` response instead of probing with separate
+  `tools/list`, `prompts/list`, and `resources/list` requests.
+* **stdio backward-compatibility probe.** On stdio, there is no per-request
+  HTTP status code to drive fallback. A client that supports both modern
+  (per-request `_meta`) and legacy (`initialize` handshake) servers **SHOULD**
+  send `server/discover` first; see
+  [stdio: Backward Compatibility](/specification/2026-07-28/basic/transports/stdio#backward-compatibility)
+  for the fallback rules.
+
+See [Protocol Version Negotiation](/specification/2026-07-28/basic/versioning#protocol-version-negotiation)
+for the full version-selection flow. For HTTP-specific status codes returned for
+unknown methods, see the [Protocol Version Header](/specification/2026-07-28/basic/transports/streamable-http#protocol-version-header)
+section in Transports.
+
+## Data Types
+
+### DiscoverResult
+
+A discovery result includes:
+
+* `supportedVersions`: Protocol versions the server supports. The client should
+  choose one of these for subsequent requests.
+* `capabilities`: Capabilities the server supports (tools, resources, prompts,
+  etc.)
+* `_meta['io.modelcontextprotocol/serverInfo']`: Name and version of the server
+  software. Servers **SHOULD** include this field.
+* `instructions`: Optional natural-language guidance for LLMs on how to use
+  this server effectively
+
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Prompts
+
+<div id="enable-section-numbers" />
+
+The Model Context Protocol (MCP) provides a standardized way for servers to expose prompt
+templates to clients. Prompts allow servers to provide structured messages and
+instructions for interacting with language models. Clients can discover available
+prompts, retrieve their contents, and provide arguments to customize them.
+
+<Note>
+  For brevity, the request examples on this page omit the `_meta` request
+  metadata (`io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientInfo`, and
+  `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
+  the required `_meta` fields; see
+  [`_meta`](/specification/2026-07-28/basic/index#meta).
+</Note>
+
+## User Interaction Model
+
+Prompts are designed to be **user-controlled**, meaning they are exposed from servers to
+clients with the intention of the user being able to explicitly select them for use.
+This refers to who decides when the prompt is used, not who authors its content. Prompt
+content is defined by the server.
+
+Typically, prompts would be triggered through user-initiated commands in the user
+interface, which allows users to naturally discover and invoke available prompts.
+
+For example, as slash commands:
+
+<img src="https://mintcdn.com/mcp/UAHvrCg8SwnAZwI3/specification/2026-07-28/server/slash-command.png?fit=max&auto=format&n=UAHvrCg8SwnAZwI3&q=85&s=7ed7762fc5e3b4b32cba2a71ede48000" alt="Example of prompt exposed as slash command" width="293" height="106" data-path="specification/2026-07-28/server/slash-command.png" />
+
+However, implementors are free to expose prompts through any interface pattern that suits
+their needs—the protocol itself does not mandate any specific user interaction
+model.
+
+## Capabilities
+
+Servers that support prompts **MUST** declare the `prompts` capability in their
+[`DiscoverResult`](/specification/2026-07-28/schema#discoverresult):
+
+```json theme={null}
+{
+  "capabilities": {
+    "prompts": {
+      "listChanged": true
+    }
+  }
+}
+```
+
+`listChanged` indicates whether the server will emit notifications when the list of
+available prompts changes.
+
+Servers that declare the `prompts` capability **MUST** respond to `prompts/list` requests
+with the set of prompts currently available to the requesting client. This set **MAY** be
+empty and **MAY** change over time (see
+[List Changed Notification](#list-changed-notification)), but **MUST NOT** vary
+per-connection or as a side effect of other requests on the connection. The set
+**MAY** vary by the authorization presented on the request — for example, returning
+only the prompts the caller's granted scopes permit — since credentials are
+per-request input, not connection state.
+
+## Protocol Messages
+
+### Listing Prompts
+
+To retrieve available prompts, clients send a `prompts/list` request. This operation
+supports [pagination](/specification/2026-07-28/server/utilities/pagination) and [caching](/specification/2026-07-28/server/utilities/caching).
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "prompts/list",
+  "params": {
+    "cursor": "optional-cursor-value"
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "resultType": "complete",
+    "prompts": [
+      {
+        "name": "code_review",
+        "title": "Request Code Review",
+        "description": "Asks the LLM to analyze code quality and suggest improvements",
+        "arguments": [
+          {
+            "name": "code",
+            "description": "The code to review",
+            "required": true
+          }
+        ],
+        "icons": [
+          {
+            "src": "https://example.com/review-icon.svg",
+            "mimeType": "image/svg+xml",
+            "sizes": ["any"]
+          }
+        ]
+      }
+    ],
+    "nextCursor": "next-page-cursor",
+    "ttlMs": 600000,
+    "cacheScope": "public"
+  }
+}
+```
+
+### Getting a Prompt
+
+To retrieve a specific prompt, clients send a `prompts/get` request. Arguments may be
+auto-completed through [the completion API](/specification/2026-07-28/server/utilities/completion).
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "prompts/get",
+  "params": {
+    "name": "code_review",
+    "arguments": {
+      "code": "def hello():\n    print('world')"
+    }
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "resultType": "complete",
+    "description": "Code review prompt",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "Please review this Python code:\ndef hello():\n    print('world')"
+        }
+      }
+    ]
+  }
+}
+```
+
+Servers **MAY** also respond to `prompts/get` with an [`InputRequiredResult`](/specification/2026-07-28/basic/patterns/mrtr#inputrequiredresult) to indicate that additional input is needed before the prompt can be resolved. This follows the [multi round-trip requests](/specification/2026-07-28/basic/patterns/mrtr#multi-round-trip-requests) mechanism. When retrying the request, clients include `inputResponses` and, if provided by the server, `requestState` in the request parameters.
+
+### List Changed Notification
+
+When the list of available prompts changes, servers that declared the `listChanged`
+capability **SHOULD** send a notification to clients that have opened a
+[`subscriptions/listen`](/specification/2026-07-28/basic/patterns/subscriptions) stream with
+`promptsListChanged: true`:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/prompts/list_changed"
+}
+```
+
+## Message Flow
+
+```mermaid theme={null}
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: Discovery
+    Client->>Server: prompts/list
+    Server-->>Client: List of prompts
+
+    Note over Client,Server: Usage
+    Client->>Server: prompts/get
+    Server-->>Client: Prompt content
+
+    opt listChanged
+      Client->>Server: subscriptions/listen (promptsListChanged: true)
+      Server--)Client: notifications/subscriptions/acknowledged
+      Note over Client,Server: Changes
+      Server--)Client: notifications/prompts/list_changed
+      Client->>Server: prompts/list
+      Server-->>Client: Updated prompts
+    end
+```
+
+## Data Types
+
+### Prompt
+
+A prompt definition includes:
+
+* `name`: Unique identifier for the prompt
+* `title`: Optional human-readable name of the prompt for display purposes.
+* `description`: Optional human-readable description
+* `icons`: Optional array of icons for display in user interfaces
+* `arguments`: Optional list of arguments for customization
+
+### PromptMessage
+
+Messages in a prompt can contain:
+
+* `role`: Either "user" or "assistant" to indicate the speaker
+* `content`: One of the following content types:
+
+<Note>
+  All content types in prompt messages support optional
+  [annotations](/specification/2026-07-28/server/resources#annotations) for
+  metadata about audience, priority, and modification times.
+</Note>
+
+#### Text Content
+
+Text content represents plain text messages:
+
+```json theme={null}
+{
+  "type": "text",
+  "text": "The text content of the message"
+}
+```
+
+This is the most common content type used for natural language interactions.
+
+#### Image Content
+
+Image content allows including visual information in messages:
+
+```json theme={null}
+{
+  "type": "image",
+  "data": "base64-encoded-image-data",
+  "mimeType": "image/png"
+}
+```
+
+The image data **MUST** be base64-encoded and include a valid MIME type. This enables
+multi-modal interactions where visual context is important.
+
+#### Audio Content
+
+Audio content allows including audio information in messages:
+
+```json theme={null}
+{
+  "type": "audio",
+  "data": "base64-encoded-audio-data",
+  "mimeType": "audio/wav"
+}
+```
+
+The audio data MUST be base64-encoded and include a valid MIME type. This enables
+multi-modal interactions where audio context is important.
+
+#### Resource Links
+
+Prompt messages **MAY** include links to
+[Resources](/specification/2026-07-28/server/resources), to provide additional context or
+data without embedding the resource contents directly. In this case, the prompt message
+returns a URI that can be fetched by the client:
+
+```json theme={null}
+{
+  "type": "resource_link",
+  "uri": "file:///project/src/main.rs",
+  "name": "main.rs",
+  "description": "Primary application entry point",
+  "mimeType": "text/x-rust"
+}
+```
+
+Resource links support the same [Resource annotations](/specification/2026-07-28/server/resources#annotations)
+as regular resources to help clients understand how to use them.
+
+#### Embedded Resources
+
+Embedded resources allow referencing server-side resources directly in messages:
+
+```json theme={null}
+{
+  "type": "resource",
+  "resource": {
+    "uri": "resource://example",
+    "mimeType": "text/plain",
+    "text": "Resource content"
+  }
+}
+```
+
+Resources can contain either text or binary (blob) data and **MUST** include:
+
+* A valid resource URI
+* The appropriate MIME type
+* Either text content or base64-encoded blob data
+
+Embedded resources enable prompts to seamlessly incorporate server-managed content like
+documentation, code samples, or other reference materials directly into the conversation
+flow.
+
+## Error Handling
+
+Servers **SHOULD** return standard JSON-RPC errors for common failure cases:
+
+* Invalid prompt name: `-32602` (Invalid params)
+* Missing required arguments: `-32602` (Invalid params)
+* Internal errors: `-32603` (Internal error)
+
+## Implementation Considerations
+
+1. Servers **SHOULD** validate prompt arguments before processing
+2. Clients **SHOULD** handle pagination for large prompt lists
+3. Both parties **SHOULD** respect capability negotiation
+
+## Security
+
+Implementations **MUST** carefully validate all prompt inputs and outputs to prevent
+injection attacks or unauthorized access to resources.
+
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Resources
+
+<div id="enable-section-numbers" />
+
+The Model Context Protocol (MCP) provides a standardized way for servers to expose
+resources to clients. Resources allow servers to share data that provides context to
+language models, such as files, database schemas, or application-specific information.
+Each resource is uniquely identified by a
+[URI](https://datatracker.ietf.org/doc/html/rfc3986).
+
+<Note>
+  For brevity, the request examples on this page omit the `_meta` request
+  metadata (`io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientInfo`, and
+  `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
+  the required `_meta` fields; see
+  [`_meta`](/specification/2026-07-28/basic/index#meta).
+</Note>
+
+## User Interaction Model
+
+Resources in MCP are designed to be **application-driven**, with host applications
+determining how to incorporate context based on their needs.
+
+For example, applications could:
+
+* Expose resources through UI elements for explicit selection, in a tree or list view
+* Allow the user to search through and filter available resources
+* Implement automatic context inclusion, based on heuristics or the AI model's selection
+
+<img src="https://mintcdn.com/mcp/UAHvrCg8SwnAZwI3/specification/2026-07-28/server/resource-picker.png?fit=max&auto=format&n=UAHvrCg8SwnAZwI3&q=85&s=e2aa63c0e97d97eff5da87bdd3c2260e" alt="Example of resource context picker" width="174" height="181" data-path="specification/2026-07-28/server/resource-picker.png" />
+
+However, implementations are free to expose resources through any interface pattern that
+suits their needs—the protocol itself does not mandate any specific user
+interaction model.
+
+## Capabilities
+
+Servers that support resources **MUST** declare the `resources` capability:
+
+```json theme={null}
+{
+  "capabilities": {
+    "resources": {
+      "listChanged": true,
+      "subscribe": true
+    }
+  }
+}
+```
+
+The capability supports two optional features:
+
+* `listChanged`: whether the server will emit notifications when the list of available
+  resources changes.
+* `subscribe` : whether the server supports resource-specific update notifications
+  for resources requested through subscriptions/listen using the resourceSubscriptions
+  filter.
+
+Servers may advertise either feature independently, together or neither.
+
+Serves that support neither `listChanged` or `subscribe` may omit it:
+
+```json theme={null}
+{
+  "capabilities": {
+    "resources": {}
+  }
+}
+```
+
+Servers that declare the `resources` capability **MUST** respond to `resources/list`
+requests with the set of resources currently available to the requesting client. This set
+**MAY** be empty and **MAY** change over time (see
+[List Changed Notification](#list-changed-notification)), but **MUST NOT** vary
+per-connection or as a side effect of other requests on the connection. The set
+**MAY** vary by the authorization presented on the request — for example, returning
+only the resources the caller's granted scopes permit — since credentials are
+per-request input, not connection state.
+
+## Protocol Messages
+
+### Listing Resources
+
+To discover available resources, clients send a `resources/list` request. This operation
+supports [pagination](/specification/2026-07-28/server/utilities/pagination) and [caching](/specification/2026-07-28/server/utilities/caching).
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "resources/list",
+  "params": {
+    "cursor": "optional-cursor-value"
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "resultType": "complete",
+    "resources": [
+      {
+        "uri": "file:///project/src/main.rs",
+        "name": "main.rs",
+        "title": "Rust Software Application Main File",
+        "description": "Primary application entry point",
+        "mimeType": "text/x-rust",
+        "icons": [
+          {
+            "src": "https://example.com/rust-file-icon.png",
+            "mimeType": "image/png",
+            "sizes": ["48x48"]
+          }
+        ]
+      }
+    ],
+    "nextCursor": "next-page-cursor",
+    "ttlMs": 300000,
+    "cacheScope": "public"
+  }
+}
+```
+
+### Reading Resources
+
+To retrieve resource contents, clients send a `resources/read` request. This operation
+supports [caching](/specification/2026-07-28/server/utilities/caching).
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "resources/read",
+  "params": {
+    "uri": "file:///project/src/main.rs"
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "resultType": "complete",
+    "contents": [
+      {
+        "uri": "file:///project/src/main.rs",
+        "mimeType": "text/x-rust",
+        "text": "fn main() {\n    println!(\"Hello world!\");\n}"
+      }
+    ],
+    "ttlMs": 60000,
+    "cacheScope": "private"
+  }
+}
+```
+
+Servers **MAY** return multiple resource contents in response to a single
+`resources/read` request. For example, a server could return the contents of
+several files when a directory resource is read.
+
+Servers **MAY** also respond to `resources/read` with an [`InputRequiredResult`](/specification/2026-07-28/basic/patterns/mrtr#inputrequiredresult) to indicate that additional input is needed before the resource can be read. This follows the [multi round-trip requests](/specification/2026-07-28/basic/patterns/mrtr#multi-round-trip-requests) mechanism. When retrying the request, clients include `inputResponses` and, if provided by the server, `requestState` in the request parameters.
+
+Alternatively, if the scheme of `uri` is `https://`, clients may fetch the resource directly from the web. See the [Common URI Schemes section](#https%3A%2F%2F) for more information.
+
+### Resource Templates
+
+Resource templates allow servers to expose parameterized resources using
+[URI templates](https://datatracker.ietf.org/doc/html/rfc6570). Arguments may be
+auto-completed through [the completion API](/specification/2026-07-28/server/utilities/completion).
+This operation supports [pagination](/specification/2026-07-28/server/utilities/pagination) and [caching](/specification/2026-07-28/server/utilities/caching).
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "resources/templates/list",
+  "params": {
+    "cursor": "optional-cursor-value"
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "resultType": "complete",
+    "resourceTemplates": [
+      {
+        "uriTemplate": "file:///{path}",
+        "name": "Project Files",
+        "title": "📁 Project Files",
+        "description": "Access files in the project directory",
+        "mimeType": "application/octet-stream",
+        "icons": [
+          {
+            "src": "https://example.com/folder-icon.png",
+            "mimeType": "image/png",
+            "sizes": ["48x48"]
+          }
+        ]
+      }
+    ],
+    "nextCursor": "next-page-cursor",
+    "ttlMs": 300000,
+    "cacheScope": "public"
+  }
+}
+```
+
+### List Changed Notification
+
+When the list of available resources changes, servers that declared the `listChanged`
+capability **SHOULD** send a notification:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/resources/list_changed"
+}
+```
+
+### Subscriptions
+
+Clients subscribe to change notifications for specific resources by sending a
+[`subscriptions/listen`][subscriptions-listen] request with the resource URIs listed in
+`notifications.resourceSubscriptions`. The server delivers
+`notifications/resources/updated` on the resulting stream whenever a watched resource
+changes.
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/resources/updated",
+  "params": {
+    "_meta": { "io.modelcontextprotocol/subscriptionId": 4 },
+    "uri": "file:///project/src/main.rs"
+  }
+}
+```
+
+See [Subscriptions][subscriptions] for the full protocol mechanics (acknowledgment,
+`subscriptionId` correlation, and cancellation).
+
+[subscriptions-listen]: /specification/2026-07-28/schema#subscriptionslistenrequest
+
+[subscriptions]: /specification/2026-07-28/basic/patterns/subscriptions
+
+## Message Flow
+
+```mermaid theme={null}
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: Resource Discovery
+    Client->>Server: resources/list
+    Server-->>Client: List of resources
+
+    Note over Client,Server: Resource Template Discovery
+    Client->>Server: resources/templates/list
+    Server-->>Client: List of resource templates
+
+    Note over Client,Server: Resource Access
+    Client->>Server: resources/read
+    Server-->>Client: Resource contents
+
+    Note over Client,Server: Subscribe to changes
+    Client->>Server: subscriptions/listen (resourceSubscriptions)
+    Server--)Client: notifications/subscriptions/acknowledged
+
+    Note over Client,Server: Resource updated
+    Server--)Client: notifications/resources/updated
+    Client->>Server: resources/read
+    Server-->>Client: Updated contents
+```
+
+## Data Types
+
+### Resource
+
+A resource definition includes:
+
+* `uri`: Unique identifier for the resource
+* `name`: The name of the resource.
+* `title`: Optional human-readable name of the resource for display purposes.
+* `description`: Optional description
+* `icons`: Optional array of icons for display in user interfaces
+* `mimeType`: Optional MIME type
+* `size`: Optional size in bytes
+
+### Resource Contents
+
+Resources can contain either text or binary data:
+
+#### Text Content
+
+```json theme={null}
+{
+  "uri": "file:///example.txt",
+  "mimeType": "text/plain",
+  "text": "Resource content"
+}
+```
+
+#### Binary Content
+
+```json theme={null}
+{
+  "uri": "file:///example.png",
+  "mimeType": "image/png",
+  "blob": "base64-encoded-data"
+}
+```
+
+### Annotations
+
+Resources, resource templates and content blocks support optional annotations that provide hints to clients about how to use or display the resource:
+
+* **`audience`**: An array indicating the intended audience(s) for this resource. Valid values are `"user"` and `"assistant"`. For example, `["user", "assistant"]` indicates content useful for both.
+* **`priority`**: A number from 0.0 to 1.0 indicating the importance of this resource. A value of 1 means "most important" (effectively required), while 0 means "least important" (entirely optional).
+* **`lastModified`**: An ISO 8601 formatted timestamp indicating when the resource was last modified (e.g., `"2025-01-12T15:00:58Z"`).
+
+Example resource with annotations:
+
+```json theme={null}
+{
+  "uri": "file:///project/README.md",
+  "name": "README.md",
+  "title": "Project Documentation",
+  "mimeType": "text/markdown",
+  "annotations": {
+    "audience": ["user"],
+    "priority": 0.8,
+    "lastModified": "2025-01-12T15:00:58Z"
+  }
+}
+```
+
+Clients can use these annotations to:
+
+* Filter resources based on their intended audience
+* Prioritize which resources to include in context
+* Display modification times or sort by recency
+
+## Common URI Schemes
+
+The protocol defines several standard URI schemes. This list is not
+exhaustive—implementations are always free to use additional, custom URI schemes.
+
+### https\://
+
+Used to represent a resource available on the web.
+
+Servers **SHOULD** use this scheme only when the client is able to fetch and load the
+resource directly from the web on its own—that is, it doesn’t need to read the resource
+via the MCP server.
+
+For other use cases, servers **SHOULD** prefer to use another URI scheme, or define a
+custom one, even if the server will itself be downloading resource contents over the
+internet.
+
+### file://
+
+Used to identify resources that behave like a filesystem. However, the resources do not
+need to map to an actual physical filesystem.
+
+MCP servers **MAY** identify file:// resources with an
+[XDG MIME type](https://specifications.freedesktop.org/shared-mime-info-spec/0.14/ar01s02.html#id-1.3.14),
+like `inode/directory`, to represent non-regular files (such as directories) that don’t
+otherwise have a standard MIME type.
+
+### git://
+
+Git version control integration.
+
+### Custom URI Schemes
+
+Custom URI schemes **MUST** be in accordance with [RFC3986](https://datatracker.ietf.org/doc/html/rfc3986),
+taking the above guidance in to account.
+
+## Error Handling
+
+If the requested resource does not exist, servers **MUST** return a JSON-RPC error with
+code `-32602` (Invalid Params). Servers **SHOULD** return `-32603` for internal errors.
+
+For backwards compatibility, clients **SHOULD** also accept `-32002` as a
+resource not found error, as earlier protocol versions used this code.
+
+Servers **MUST NOT** return an empty `contents` array for a non-existent resource. An empty array is ambiguous—it could mean the resource exists but has no content, or that it doesn't exist at all.
+
+Example error:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "error": {
+    "code": -32602,
+    "message": "Resource not found",
+    "data": {
+      "uri": "file:///nonexistent.txt"
+    }
+  }
+}
+```
+
+## Security Considerations
+
+1. Servers **MUST** validate all resource URIs
+2. Access controls **SHOULD** be implemented for sensitive resources
+3. Binary data **MUST** be properly encoded
+4. Resource permissions **SHOULD** be checked before operations
+5. Servers **MUST** sanitize file paths to prevent directory traversal attacks
+   when serving `file://` resources
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Tools
+
+<div id="enable-section-numbers" />
+
+The Model Context Protocol (MCP) allows servers to expose tools that can be invoked by
+language models. Tools enable models to interact with external systems, such as querying
+databases, calling APIs, or performing computations. Each tool is uniquely identified by
+a name and includes metadata describing its schema.
+
+<Note>
+  For brevity, the request examples on this page omit the `_meta` request
+  metadata (`io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientInfo`, and
+  `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
+  the required `_meta` fields; see
+  [`_meta`](/specification/2026-07-28/basic/index#meta).
+</Note>
+
+## User Interaction Model
+
+Tools in MCP are designed to be **model-controlled**, meaning that the language model can
+discover and invoke tools automatically based on its contextual understanding and the
+user's prompts.
+
+However, implementations are free to expose tools through any interface pattern that
+suits their needs—the protocol itself does not mandate any specific user
+interaction model.
+
+<Warning>
+  For trust & safety and security, there **SHOULD** always
+  be a human in the loop with the ability to deny tool invocations.
+
+  Applications **SHOULD**:
+
+  * Provide UI that makes clear which tools are being exposed to the AI model
+  * Insert clear visual indicators when tools are invoked
+  * Present confirmation prompts to the user for operations, to ensure a human is in the
+    loop
+</Warning>
+
+## Capabilities
+
+Servers that support tools **MUST** declare the `tools` capability:
+
+```json theme={null}
+{
+  "capabilities": {
+    "tools": {
+      "listChanged": true
+    }
+  }
+}
+```
+
+`listChanged` indicates whether the server will emit notifications when the list of
+available tools changes.
+
+Servers that declare the `tools` capability **MUST** respond to `tools/list` requests
+with the set of tools currently available to the requesting client. This set **MAY** be
+empty and **MAY** change over time (see
+[List Changed Notification](#list-changed-notification)), but **MUST NOT** vary
+per-connection or as a side effect of other requests on the connection. The set
+**MAY** vary by the authorization presented on the request — for example, returning
+only the tools the caller's granted scopes permit — since credentials are
+per-request input, not connection state.
+
+Servers **SHOULD** return tools in a deterministic order (i.e., the same ordering across
+requests when the underlying set of tools has not changed). Deterministic ordering enables
+clients to reliably cache the tool list and improves LLM prompt cache hit rates when tools
+are included in model context.
+
+## Protocol Messages
+
+### Listing Tools
+
+To discover available tools, clients send a `tools/list` request. This operation supports
+[pagination](/specification/2026-07-28/server/utilities/pagination) and [caching](/specification/2026-07-28/server/utilities/caching).
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/list",
+  "params": {
+    "cursor": "optional-cursor-value"
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "resultType": "complete",
+    "tools": [
+      {
+        "name": "get_weather",
+        "title": "Weather Information Provider",
+        "description": "Get current weather information for a location",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "City name or zip code"
+            }
+          },
+          "required": ["location"]
+        },
+        "icons": [
+          {
+            "src": "https://example.com/weather-icon.png",
+            "mimeType": "image/png",
+            "sizes": ["48x48"]
+          }
+        ]
+      }
+    ],
+    "nextCursor": "next-page-cursor",
+    "ttlMs": 300000,
+    "cacheScope": "public"
+  }
+}
+```
+
+### Calling Tools
+
+To invoke a tool, clients send a `tools/call` request:
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "get_weather",
+    "arguments": {
+      "location": "New York"
+    }
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "resultType": "complete",
+    "content": [
+      {
+        "type": "text",
+        "text": "Current weather in New York:\nTemperature: 72°F\nConditions: Partly cloudy"
+      }
+    ],
+    "isError": false
+  }
+}
+```
+
+### Input Required Tool Results
+
+Servers **MAY** respond to `tools/call` with an [`InputRequiredResult`](/specification/2026-07-28/basic/patterns/mrtr#inputrequiredresult) to indicate that additional input is needed before the tool call can be completed. This follows the [multi round-trip requests](/specification/2026-07-28/basic/patterns/mrtr#multi-round-trip-requests) mechanism.
+
+When retrying the request with input responses, clients include `inputResponses` and, if provided by the server, `requestState` in the request parameters:
+
+**Input Required Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "resultType": "input_required",
+    "inputRequests": {
+      "github_login": {
+        "method": "elicitation/create",
+        "params": {
+          "mode": "form",
+          "message": "Please provide your GitHub username",
+          "requestedSchema": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            },
+            "required": ["name"]
+          }
+        }
+      }
+    },
+    "requestState": "eyJsb2NhdGlvbiI6Ik5ldyBZb3JrIn0..."
+  }
+}
+```
+
+**Retry with Input Responses:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "get_weather",
+    "arguments": {
+      "location": "New York"
+    },
+    "inputResponses": {
+      "github_login": {
+        "action": "accept",
+        "content": {
+          "name": "octocat"
+        }
+      }
+    },
+    "requestState": "eyJsb2NhdGlvbiI6Ik5ldyBZb3JrIn0..."
+  }
+}
+```
+
+Note that the JSON-RPC `id` **MUST** be different between the initial request and the retry.
+
+### List Changed Notification
+
+When the list of available tools changes, servers that declared the `listChanged`
+capability **SHOULD** send a notification to clients that have opened a
+[`subscriptions/listen`](/specification/2026-07-28/basic/patterns/subscriptions) stream with
+`toolsListChanged: true`:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/tools/list_changed"
+}
+```
+
+## Message Flow
+
+```mermaid theme={null}
+sequenceDiagram
+    participant LLM
+    participant Client
+    participant Server
+
+    Note over Client,Server: Discovery
+    Client->>Server: tools/list
+    Server-->>Client: List of tools
+
+    Note over Client,LLM: Tool Selection
+    LLM->>Client: Select tool to use
+
+    Note over Client,Server: Invocation
+    Client->>Server: tools/call
+    Server-->>Client: Tool result
+    Client->>LLM: Process result
+
+    opt listChanged
+      Client->>Server: subscriptions/listen (toolsListChanged: true)
+      Server--)Client: notifications/subscriptions/acknowledged
+      Note over Client,Server: Updates
+      Server--)Client: notifications/tools/list_changed
+      Client->>Server: tools/list
+      Server-->>Client: Updated tools
+    end
+```
+
+## Data Types
+
+### Tool
+
+A tool definition includes:
+
+* `name`: Unique identifier for the tool
+* `title`: Optional human-readable name of the tool for display purposes.
+* `description`: Human-readable description of functionality
+* `icons`: Optional array of icons for display in user interfaces
+* `inputSchema`: JSON Schema defining expected parameters
+  * Follows the [JSON Schema usage guidelines](/specification/2026-07-28/basic#json-schema-usage)
+  * Defaults to 2020-12 if no `$schema` field is present
+  * **MUST** be a valid JSON Schema object (not `null`)
+  * For tools with no parameters, use one of these valid approaches:
+    * `{ "type": "object", "additionalProperties": false }` - **Recommended**: explicitly accepts only empty objects
+    * `{ "type": "object" }` - accepts any object (including with properties)
+  * Properties **MAY** include an [`x-mcp-header`](#x-mcp-header) annotation to expose
+    parameter values as HTTP headers
+* `outputSchema`: Optional JSON Schema defining expected output structure
+  * Follows the [JSON Schema usage guidelines](/specification/2026-07-28/basic#json-schema-usage)
+  * Defaults to 2020-12 if no `$schema` field is present
+* `annotations`: Optional properties describing tool behavior
+
+<Warning>
+  For trust & safety and security, clients **MUST** consider tool annotations to
+  be untrusted unless they come from trusted servers.
+</Warning>
+
+#### Tool Names
+
+* Tool names **SHOULD** be between 1 and 128 characters in length (inclusive).
+* Tool names **SHOULD** be considered case-sensitive.
+* The following **SHOULD** be the only allowed characters: uppercase and lowercase ASCII letters (A-Z, a-z), digits
+  (0-9), underscore (\_), hyphen (-), and dot (.)
+* Tool names **SHOULD NOT** contain spaces, commas, or other special characters.
+* Tool names **SHOULD** be unique within a server.
+* Example valid tool names:
+  * `getUser`
+  * `DATA_EXPORT_v2`
+  * `admin.tools.list`
+
+<Note>
+  Tool name uniqueness is scoped to a single server. Clients or proxies that
+  aggregate tools from multiple servers **MAY** encounter naming collisions (for
+  example, two servers each exposing a `search` tool) and **SHOULD** implement a
+  disambiguation strategy such as prefixing tool names with a server identifier.
+
+  The server `name` (from `serverInfo`) is not guaranteed to be unique across
+  servers and **SHOULD NOT** be relied upon for disambiguation.
+</Note>
+
+#### x-mcp-header
+
+The `x-mcp-header` extension property allows servers to designate specific tool
+parameters to be mirrored into HTTP headers when using the
+[Streamable HTTP transport](/specification/2026-07-28/basic/transports/streamable-http#custom-headers-from-tool-parameters).
+This enables network intermediaries (load balancers, proxies, WAFs) to route and process
+requests based on parameter values without parsing the request body.
+
+The `x-mcp-header` property is placed directly within the JSON Schema of the property to
+be mirrored. Its value specifies the name portion of the resulting `Mcp-Param-{name}`
+HTTP header.
+
+**Constraints on `x-mcp-header` values:**
+
+* **MUST NOT** be empty
+* **MUST** match HTTP field-name token syntax (`1*tchar`, [RFC 9110 Section 5.1](https://datatracker.ietf.org/doc/html/rfc9110#section-5.1))
+* **MUST NOT** contain control characters, including carriage return (CR, `\r`) or
+  line feed (LF, `\n`)
+* **MUST** be case-insensitively unique among all `x-mcp-header` values in the
+  `inputSchema`
+* **MUST** only be applied to parameters with primitive types (integer, string, boolean).
+  Parameters with type `number` are not permitted. Integer values **MUST** be within the
+  safe range for integers represented using IEEE754 double-precision floating point numbers (−2<sup>53</sup>+1 to 2<sup>53</sup>−1)
+* **MUST** only be applied to properties that are *statically reachable* from the schema
+  root, as defined in
+  [Custom Headers from Tool Parameters](/specification/2026-07-28/basic/transports/streamable-http#custom-headers-from-tool-parameters),
+  which also defines how header values are extracted from call arguments
+
+Clients using the Streamable HTTP transport **MUST** reject tool definitions where any
+`x-mcp-header` value violates these constraints. Rejection means the client **MUST**
+exclude the invalid tool from the result of `tools/list`. Clients **SHOULD** log a
+warning when rejecting a tool definition, including the tool name and the reason for
+rejection. This ensures that a single malformed tool definition does not prevent other
+valid tools from being used. Clients using other transports (e.g., stdio) **MAY** ignore
+`x-mcp-header` annotations entirely.
+
+**Example tool definition with `x-mcp-header`:**
+
+```json theme={null}
+{
+  "name": "execute_sql",
+  "description": "Execute SQL on Google Cloud Spanner",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "region": {
+        "type": "string",
+        "description": "The region to execute the query in",
+        "x-mcp-header": "Region"
+      },
+      "query": {
+        "type": "string",
+        "description": "The SQL query to execute"
+      }
+    },
+    "required": ["region", "query"]
+  }
+}
+```
+
+In this example, when the tool is called with `"region": "us-west1"`, the client adds
+the header `Mcp-Param-Region: us-west1` to the HTTP request.
+
+<Warning>
+  Server developers **SHOULD NOT** mark sensitive parameters (passwords, API keys, tokens,
+  PII) with `x-mcp-header`, as header values are visible to network intermediaries.
+</Warning>
+
+### Tool Result
+
+Tool results may contain [**structured**](#structured-content) or **unstructured** content.
+
+**Unstructured** content is returned in the `content` field of a result, and can contain multiple content items of different types:
+
+<Note>
+  All content types (text, image, audio, resource links, and embedded resources)
+  support optional
+  [annotations](/specification/2026-07-28/server/resources#annotations) that
+  provide metadata about audience, priority, and modification times. This is the
+  same annotation format used by resources and prompts.
+</Note>
+
+#### Text Content
+
+```json theme={null}
+{
+  "type": "text",
+  "text": "Tool result text"
+}
+```
+
+#### Image Content
+
+```json theme={null}
+{
+  "type": "image",
+  "data": "base64-encoded-data",
+  "mimeType": "image/png",
+  "annotations": {
+    "audience": ["user"],
+    "priority": 0.9
+  }
+}
+```
+
+#### Audio Content
+
+```json theme={null}
+{
+  "type": "audio",
+  "data": "base64-encoded-audio-data",
+  "mimeType": "audio/wav"
+}
+```
+
+#### Resource Links
+
+A tool **MAY** return links to [Resources](/specification/2026-07-28/server/resources), to provide additional context
+or data. In this case, the tool will return a URI that can be subscribed to or fetched by the client:
+
+```json theme={null}
+{
+  "type": "resource_link",
+  "uri": "file:///project/src/main.rs",
+  "name": "main.rs",
+  "description": "Primary application entry point",
+  "mimeType": "text/x-rust"
+}
+```
+
+Resource links support the same [Resource annotations](/specification/2026-07-28/server/resources#annotations) as regular resources to help clients understand how to use them.
+
+<Info>
+  Resource links returned by tools are not guaranteed to appear in the results
+  of a `resources/list` request.
+</Info>
+
+#### Embedded Resources
+
+[Resources](/specification/2026-07-28/server/resources) **MAY** be embedded to provide additional context
+or data using a suitable [URI scheme](./resources#common-uri-schemes). Servers that use embedded resources **SHOULD** implement the `resources` capability:
+
+```json theme={null}
+{
+  "type": "resource",
+  "resource": {
+    "uri": "file:///project/src/main.rs",
+    "mimeType": "text/x-rust",
+    "text": "fn main() {\n    println!(\"Hello world!\");\n}",
+    "annotations": {
+      "audience": ["user", "assistant"],
+      "priority": 0.7,
+      "lastModified": "2025-05-03T14:30:00Z"
+    }
+  }
+}
+```
+
+Embedded resources support the same [Resource annotations](/specification/2026-07-28/server/resources#annotations) as regular resources to help clients understand how to use them.
+
+#### Structured Content
+
+**Structured** content is returned as a JSON value in the `structuredContent` field of a result. This can be any JSON value (object, array, string, number, boolean, or null) that conforms to the tool's `outputSchema` if one is defined.
+
+For backwards compatibility, a tool that returns structured content SHOULD also return the serialized JSON in a TextContent block.
+
+<Note>
+  `structuredContent` is server-produced result data and is unrelated to LLM
+  "structured outputs" (schema-constrained model generation).
+</Note>
+
+#### Output Schema
+
+Tools may also provide an output schema for validation of structured results.
+If an output schema is provided:
+
+* Servers **MUST** provide structured results that conform to this schema.
+* Clients **SHOULD** validate structured results against this schema.
+
+Example tool with output schema:
+
+```json theme={null}
+{
+  "name": "get_weather_data",
+  "title": "Weather Data Retriever",
+  "description": "Get current weather data for a location",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "location": {
+        "type": "string",
+        "description": "City name or zip code"
+      }
+    },
+    "required": ["location"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "temperature": {
+        "type": "number",
+        "description": "Temperature in celsius"
+      },
+      "conditions": {
+        "type": "string",
+        "description": "Weather conditions description"
+      },
+      "humidity": {
+        "type": "number",
+        "description": "Humidity percentage"
+      }
+    },
+    "required": ["temperature", "conditions", "humidity"]
+  }
+}
+```
+
+Example valid response for this tool:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "result": {
+    "resultType": "complete",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"temperature\": 22.5, \"conditions\": \"Partly cloudy\", \"humidity\": 65}"
+      }
+    ],
+    "structuredContent": {
+      "temperature": 22.5,
+      "conditions": "Partly cloudy",
+      "humidity": 65
+    }
+  }
+}
+```
+
+Example tool with array output schema:
+
+```json theme={null}
+{
+  "name": "list_users",
+  "title": "User List",
+  "description": "Returns a list of all users",
+  "inputSchema": {
+    "type": "object",
+    "properties": {}
+  },
+  "outputSchema": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["id", "name", "email"]
+    }
+  }
+}
+```
+
+Example valid response for a tool with array output:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "result": {
+    "resultType": "complete",
+    "content": [
+      {
+        "type": "text",
+        "text": "Found 2 users: Alice (alice@example.com) and Bob (bob@example.com)."
+      }
+    ],
+    "structuredContent": [
+      { "id": "1", "name": "Alice", "email": "alice@example.com" },
+      { "id": "2", "name": "Bob", "email": "bob@example.com" }
+    ]
+  }
+}
+```
+
+Providing an output schema helps clients and LLMs understand and properly handle structured tool outputs by:
+
+* Enabling strict schema validation of responses
+* Providing type information for better integration with programming languages
+* Guiding clients and LLMs to properly parse and utilize the returned data
+* Supporting better documentation and developer experience
+
+### Schema Examples
+
+#### Tool with default 2020-12 schema:
+
+```json theme={null}
+{
+  "name": "calculate_sum",
+  "description": "Add two numbers",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "a": { "type": "number" },
+      "b": { "type": "number" }
+    },
+    "required": ["a", "b"]
+  }
+}
+```
+
+#### Tool with explicit draft-07 schema:
+
+```json theme={null}
+{
+  "name": "calculate_sum",
+  "description": "Add two numbers",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "a": { "type": "number" },
+      "b": { "type": "number" }
+    },
+    "required": ["a", "b"]
+  }
+}
+```
+
+#### Tool with no parameters:
+
+```json theme={null}
+{
+  "name": "get_current_time",
+  "description": "Returns the current server time",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}
+```
+
+## Stateful Tools
+
+<Note>
+  This section is non-normative guidance for tool design. The protocol has no
+  concept of a state handle; from the wire's perspective a handle is an ordinary
+  string in a tool result and an ordinary argument to subsequent tool calls.
+</Note>
+
+MCP has no protocol-level session, so a server cannot rely on implicit
+per-connection state to relate one tool call to the next. Servers that need to
+maintain state across calls — a shopping cart, an open browser context, a
+database transaction — should do so by returning an explicit handle from a
+creation tool and accepting that handle as an argument on subsequent calls.
+
+For example, a server that manages a shopping cart might expose:
+
+```jsonc theme={null}
+// → tools/call
+{ "name": "create_basket", "arguments": {} }
+
+// ← result
+{
+  "content": [{ "type": "text", "text": "Created basket bsk_a1b2c3" }],
+  "structuredContent": { "basket_id": "bsk_a1b2c3" }
+}
+
+// → tools/call
+{
+  "name": "add_item",
+  "arguments": { "basket_id": "bsk_a1b2c3", "sku": "..." }
+}
+```
+
+The model is responsible for carrying `basket_id` forward; the server stores
+the cart contents under that key and looks them up on each call.
+
+When designing handles, servers should consider:
+
+* **Authorization.** For authenticated servers, a handle is a name, not a
+  capability. The server should validate the caller's authorization against the
+  handle on every call. For unauthenticated servers, where the handle is
+  necessarily a bearer token, it should be generated with sufficient entropy
+  (e.g., a UUIDv4) and given a bounded lifetime.
+* **Opacity.** Handles that encode internal structure invite parsing or
+  guessing; opaque identifiers do not.
+* **Lifetime.** Because handles outlive any single connection, the server's
+  retention policy should be stated in the creation tool's description (e.g.,
+  "baskets expire after 24 hours of inactivity") so the model can see it when
+  deciding to create state.
+* **Expiry errors.** A call against an expired or unknown handle should return
+  a tool execution error that says so, so the model can recover by creating a
+  new one.
+
+## Error Handling
+
+Tools use two error reporting mechanisms:
+
+1. **Protocol Errors** indicate issues with the request structure itself that models are less likely to be able to fix:
+
+   * Unknown tool
+   * Malformed requests (requests that fail to satisfy [CallToolRequest schema](/specification/2026-07-28/schema#calltoolrequest))
+   * Server errors
+
+   They are returned as standard JSON-RPC errors:
+
+   ```json theme={null}
+   {
+     "jsonrpc": "2.0",
+     "id": 3,
+     "error": {
+       "code": -32602,
+       "message": "Unknown tool: invalid_tool_name"
+     }
+   }
+   ```
+
+2. **Tool Execution Errors** contain actionable feedback that language models can use to self-correct and retry with adjusted parameters:
+
+   * API failures
+   * Input validation errors (e.g., date in wrong format, value out of range)
+   * Business logic errors
+
+   They are reported in tool results with `isError: true`:
+
+   ```json theme={null}
+   {
+     "jsonrpc": "2.0",
+     "id": 4,
+     "result": {
+       "resultType": "complete",
+       "content": [
+         {
+           "type": "text",
+           "text": "Invalid departure date: must be in the future. Current date is 08/08/2025."
+         }
+       ],
+       "isError": true
+     }
+   }
+   ```
+
+Clients **MAY** provide protocol errors to language models, though these are less likely to result in successful recovery.
+Clients **SHOULD** provide tool execution errors to language models to enable self-correction.
+
+## Security Considerations
+
+1. Servers **MUST**:
+   * Validate all tool inputs
+   * Implement proper access controls
+   * Rate limit tool invocations
+   * Sanitize tool outputs
+
+2. Clients **SHOULD**:
+   * Prompt for user confirmation on sensitive operations
+   * Show tool inputs to the user before calling the server, to avoid malicious or
+     accidental data exfiltration
+   * Validate tool results before passing to LLM
+   * Follow the [`$ref` resolution requirements](/specification/2026-07-28/basic/index#ref-resolution)
+     when validating tool inputs and outputs against `inputSchema` and `outputSchema`
+   * Implement timeouts for tool calls
+   * Log tool usage for audit purposes
+
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Caching
+
+<div id="enable-section-numbers" />
+
+The Model Context Protocol (MCP) supports caching for some results. This allows clients to cache responses and reduce unnecessary re-fetching.
+Caching is complementary to [change notifications](#interaction-with-notifications)—both
+mechanisms can coexist.
+
+## Cacheable Results
+
+Servers MUST include caching hints on results with `resultType: "complete"` returned by
+the following operations:
+
+* `server/discover`
+* `tools/list`
+* `prompts/list`
+* `resources/list`
+* `resources/templates/list`
+* `resources/read`
+
+Interim results with `resultType: "input_required"` (see
+[multi round-trip requests](/specification/2026-07-28/basic/patterns/mrtr)) are not cacheable
+and carry no caching hints.
+
+## Cache Key
+
+A cached response is identified by the request method together with the request
+parameters that affect the result (for example, the `uri` for `resources/read`, or the
+`cursor` for paginated list requests). Clients **MUST NOT** serve a cached response for
+a request whose method or parameters differ from the request that produced it.
+
+Results produced by retrying a request through the
+[multi round-trip requests](/specification/2026-07-28/basic/patterns/mrtr) mechanism—that
+is, requests carrying `inputResponses` or `requestState`—**MUST NOT** be cached,
+as they depend on inputs that are not part of the cache key.
+
+## Cacheable Model
+
+Cacheable Results in MCP use two fields to provide caching hints to clients:
+
+* The <b>Time-to-live (TTL) Field</b>,`ttlMs`, is an integer value in milliseconds specifying how long the client MAY consider the result fresh.
+* The <b>Cache Scope Field</b>,`cacheScope`, indicates the intended scope of the cached response, either `"public"` or `"private"`.
+
+### Time-to-Live (TTL) Field
+
+The `ttlMs` field is a hint from the server indicating how long, in
+milliseconds, the client MAY consider the result fresh. Semantics are
+analogous to HTTP `Cache-Control: max-age`.
+
+* If `ttlMs` is `0`, the response **SHOULD** be considered immediately stale. The client
+  MAY re-fetch every time the result is needed.
+* If `ttlMs` is positive, the client **SHOULD** consider the result fresh for that many
+  milliseconds after receiving the response.
+* If `ttlMs` is absent, clients **SHOULD** assume a default of `0` (immediately stale)
+  and rely on their own caching heuristics or notifications. This should only occur in older server versions.
+* If `ttlMs` is negative, clients **SHOULD** ignore it and treat it as `0`.
+
+Servers **MUST** provide a `ttlMs` value that is `>= 0`.
+
+<Note>
+  TTL is a **freshness hint**, not a guarantee. Servers MAY change the
+  underlying data before the TTL expires. The TTL tells the client how long it
+  can reasonably avoid re-fetching, not how long the data is guaranteed to
+  remain unchanged.
+</Note>
+
+#### Freshness Calculation
+
+A client records the local time at which the response was received (`t_received`). The
+response is considered **fresh** while:
+
+```
+now < t_received + ttlMs
+```
+
+Once the TTL expires, the response is **stale** and the client **SHOULD** re-fetch on
+next access.
+
+Clients **SHOULD NOT** treat TTL as a polling interval that triggers automatic background
+refetches. The TTL is a freshness hint: the client checks freshness when it needs the
+data, and re-fetches only if stale. Implementations that do choose to poll **MUST**
+apply jitter and backoff.
+
+Clients **MAY** re-fetch before the TTL expires if they have reason to believe the data
+has changed (e.g., receiving an unexpected error on a tool call indicating the method was
+not found or the parameters were invalid).
+
+Clients **MAY** serve stale responses if errors occur during re-fetching (e.g., network
+issues, server downtime).
+
+### Cache Scope Field
+
+The `cacheScope` field controls who may cache a response, analogous to HTTP
+`Cache-Control: public` vs `Cache-Control: private`.
+
+| Value       | Meaning                                                                                                                                                                                                                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"public"`  | The response does not contain user-specific data. Any client, shared gateway, or caching proxy **MAY** store and serve the cached response to any user.                                                                                                                           |
+| `"private"` | The response contains private data that is not meant to be shared between callers. Cached responses **MAY** be reused for the same authorization context. Caches **MUST NOT** be shared across authorization contexts (e.g. a different access token requires a different cache). |
+
+#### Choosing a Cache Scope
+
+* **`"public"`** is appropriate for lists of tools, prompts, and resource templates when
+  they are identical for all users.
+* **`"private"`** is appropriate for `resources/read` results that depend on the
+  authenticated user, or for filtered list results that vary per user.
+
+## Interaction with Notifications
+
+TTL and server-push notifications are complementary:
+
+* A server **MAY** provide `ttlMs` without advertising `listChanged: true` in its
+  capabilities. In this case, the client relies entirely on TTL-based freshness.
+* A server **MAY** advertise `listChanged: true` **and** provide `ttlMs`. In this case,
+  the client can use the TTL to avoid unnecessary refetches between notifications, and
+  the notification acts as an immediate invalidation signal.
+
+When a relevant notification is received while a cached response is still fresh, the
+notification **invalidates** the cached response and it should be considered immediately stale.
+
+```mermaid theme={null}
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Client->>Server: tools/list
+    Server-->>Client: { tools: [...], ttlMs: 300000 }
+    Note over Client: Cache response, fresh for 5 min
+
+    Note over Client: 2 minutes later...
+    Client->>Client: Need tools list → cache still fresh, use cached
+
+    Note over Client: 3 minutes later (TTL expired)...
+    Client->>Client: Need tools list → cache stale
+    Client->>Server: tools/list
+    Server-->>Client: { tools: [...], ttlMs: 300000 }
+
+    Note over Server: Tools change before TTL expires
+    Server-->>Client: notifications/tools/list_changed
+    Note over Client: Invalidate cache immediately
+    Client->>Server: tools/list
+    Server-->>Client: { tools: [...], ttlMs: 300000 }
+```
+
+## Interaction with Pagination
+
+When a list result is [paginated](/specification/2026-07-28/server/utilities/pagination), each
+page is an independently cacheable response—consistent with how HTTP
+`Cache-Control` treats paginated resources.
+
+* Each page response carries its own `ttlMs` value. The freshness clock for each page
+  starts at the time that page was received.
+* Servers **MAY** return different `ttlMs` values on different pages (e.g., a longer TTL
+  for early pages of a stable list, a shorter TTL for the final page).
+* When a cached page expires, the client **SHOULD** re-fetch that page using its cursor.
+* There is no cross-page consistency guarantee. If the underlying data changes between
+  page fetches, clients may observe duplicates or gaps.
+* Clients that require a consistent snapshot of the full list **SHOULD** re-fetch from
+  the beginning (without a cursor).
+* If a cursor becomes invalid (e.g., the server returns an error for a previously valid
+  cursor), the client **SHOULD** discard all cached pages and re-fetch from the
+  beginning.
+
+Servers **MUST** apply the same `cacheScope` to all response pages for a given list
+request. For example, if the first page of a `tools/list` response has
+`cacheScope: "private"`, all subsequent pages for that request **MUST** also be
+`"private"`.
+
+## Security Considerations
+
+A `cacheScope` of `"public"` indicates that the response does not contain user-specific data and can be safely shared. Servers MUST be aware that responses with a `"public"` `cacheScope` may be shared between callers even if the Result is coming from an authenticated endpoint. For example, the Result from an authenticated `tools/list` call with a `"public"` `cacheScope` may be cached by a client and may be shared outside of the initial requests authorization context. (i.e. different access tokens can leverage the same cache).
+
+Server implementors:
+
+* should ensure that the `cacheScope` correctly reflects the intended visibility of the primitive.
+* MUST apply appropriate per-primitive access controls, and MUST NOT rely on
+  `cacheScope` alone to prevent unauthorized access to primitives.
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Completion
+
+<div id="enable-section-numbers" />
+
+The Model Context Protocol (MCP) provides a standardized way for servers to offer
+autocompletion suggestions for the arguments of prompts and resource templates. When
+users are filling in argument values for a specific prompt (identified by name) or
+resource template (identified by URI), servers can provide contextual suggestions.
+
+<Note>
+  For brevity, the request examples on this page omit the `_meta` request
+  metadata (`io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientInfo`, and
+  `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
+  the required `_meta` fields; see
+  [`_meta`](/specification/2026-07-28/basic/index#meta).
+</Note>
+
+## User Interaction Model
+
+Completion in MCP is designed to support interactive user experiences similar to IDE code
+completion.
+
+For example, applications may show completion suggestions in a dropdown or popup menu as
+users type, with the ability to filter and select from available options.
+
+However, implementations are free to expose completion through any interface pattern that
+suits their needs—the protocol itself does not mandate any specific user
+interaction model.
+
+## Capabilities
+
+Servers that support completions **MUST** declare the `completions` capability:
+
+```json theme={null}
+{
+  "capabilities": {
+    "completions": {}
+  }
+}
+```
+
+## Protocol Messages
+
+### Requesting Completions
+
+To get completion suggestions, clients send a `completion/complete` request specifying
+what is being completed through a reference type:
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "completion/complete",
+  "params": {
+    "ref": {
+      "type": "ref/prompt",
+      "name": "code_review"
+    },
+    "argument": {
+      "name": "language",
+      "value": "py"
+    }
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "resultType": "complete",
+    "completion": {
+      "values": ["python", "pytorch", "pyside"],
+      "total": 10,
+      "hasMore": true
+    }
+  }
+}
+```
+
+For prompts or URI templates with multiple arguments, clients should include previous completions in the `context.arguments` object to provide context for subsequent requests.
+
+**Request:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "completion/complete",
+  "params": {
+    "ref": {
+      "type": "ref/prompt",
+      "name": "code_review"
+    },
+    "argument": {
+      "name": "framework",
+      "value": "fla"
+    },
+    "context": {
+      "arguments": {
+        "language": "python"
+      }
+    }
+  }
+}
+```
+
+**Response:**
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "resultType": "complete",
+    "completion": {
+      "values": ["flask"],
+      "total": 1,
+      "hasMore": false
+    }
+  }
+}
+```
+
+### Reference Types
+
+The protocol supports two types of completion references:
+
+| Type           | Description                               | Example                                             |
+| -------------- | ----------------------------------------- | --------------------------------------------------- |
+| `ref/prompt`   | References a prompt by name               | `{"type": "ref/prompt", "name": "code_review"}`     |
+| `ref/resource` | References a resource URI or URI template | `{"type": "ref/resource", "uri": "file:///{path}"}` |
+
+### Completion Results
+
+Servers return an array of completion values ranked by relevance, with:
+
+* Maximum 100 items per response
+* Optional total number of available matches
+* Boolean indicating if additional results exist
+
+## Message Flow
+
+```mermaid theme={null}
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client: User types argument
+    Client->>Server: completion/complete
+    Server-->>Client: Completion suggestions
+
+    Note over Client: User continues typing
+    Client->>Server: completion/complete
+    Server-->>Client: Refined suggestions
+```
+
+## Data Types
+
+### CompleteRequest
+
+* `ref`: A `PromptReference` or `ResourceTemplateReference`. For
+  `ResourceTemplateReference`, `uri` is a URI or URI template.
+* `argument`: Object containing:
+  * `name`: Argument name
+  * `value`: Current value
+* `context`: Object containing:
+  * `arguments`: A mapping of already-resolved argument names to their values.
+
+### CompleteResult
+
+* `completion`: Object containing:
+  * `values`: Array of suggestions (max 100)
+  * `total`: Optional total matches
+  * `hasMore`: Additional results flag
+
+## Error Handling
+
+Servers **SHOULD** return standard JSON-RPC errors for common failure cases:
+
+* Method not found: `-32601` (Capability not supported)
+* Invalid prompt name: `-32602` (Invalid params)
+* Missing required arguments: `-32602` (Invalid params)
+* Internal errors: `-32603` (Internal error)
+
+## Implementation Considerations
+
+1. Servers **SHOULD**:
+   * Return suggestions sorted by relevance
+   * Implement fuzzy matching where appropriate
+   * Rate limit completion requests
+   * Validate all inputs
+
+2. Clients **SHOULD**:
+   * Debounce rapid completion requests
+   * Cache completion results where appropriate
+   * Handle missing or partial results gracefully
+
+## Security
+
+Implementations **MUST**:
+
+* Validate all completion inputs
+* Implement appropriate rate limiting
+* Control access to sensitive suggestions
+* Prevent completion-based information disclosure
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Logging
+
+<div id="enable-section-numbers" />
+
+<Warning>
+  **Deprecated**: The Logging feature is deprecated as of protocol version
+  `2026-07-28`
+  ([SEP-2577](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2577)).
+  Under the [feature lifecycle policy](/community/feature-lifecycle), it remains
+  in the specification for at least twelve months after this revision's release
+  before it becomes eligible for removal. New implementations **SHOULD NOT**
+  adopt it; existing implementations **SHOULD** migrate to logging to `stderr`
+  for stdio transports, or to [OpenTelemetry](https://opentelemetry.io/) for
+  structured observability. See the [deprecated features
+  registry](/specification/2026-07-28/deprecated).
+</Warning>
+
+The Model Context Protocol (MCP) provides a standardized way for servers to send
+structured log messages to clients. Clients control logging verbosity per-request via
+`_meta`, with servers sending notifications containing severity levels, optional logger
+names, and arbitrary JSON-serializable data.
+
+## User Interaction Model
+
+Implementations are free to expose logging through any interface pattern that suits their
+needs—the protocol itself does not mandate any specific user interaction model.
+
+## Capabilities
+
+Servers that emit log message notifications **MUST** declare the `logging` capability:
+
+```json theme={null}
+{
+  "capabilities": {
+    "logging": {}
+  }
+}
+```
+
+## Log Levels
+
+The protocol follows the standard syslog severity levels specified in
+[RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1):
+
+| Level     | Description                      | Example Use Case           |
+| --------- | -------------------------------- | -------------------------- |
+| debug     | Detailed debugging information   | Function entry/exit points |
+| info      | General informational messages   | Operation progress updates |
+| notice    | Normal but significant events    | Configuration changes      |
+| warning   | Warning conditions               | Deprecated feature usage   |
+| error     | Error conditions                 | Operation failures         |
+| critical  | Critical conditions              | System component failures  |
+| alert     | Action must be taken immediately | Data corruption detected   |
+| emergency | System is unusable               | Complete system failure    |
+
+## Requesting Log Messages
+
+### Per-request log level
+
+To receive log messages for a specific request, include
+`io.modelcontextprotocol/logLevel` in the request's `_meta`. The server **MUST NOT**
+emit `notifications/message` for a request that does not include this field.
+
+When the field is present, the server **MAY** send `notifications/message`
+notifications at or above the requested level on the response stream of that
+request, before the final response. `notifications/message` is request-scoped:
+the server **MUST NOT** deliver it on a
+[`subscriptions/listen`](/specification/2026-07-28/basic/patterns/subscriptions)
+stream or on any stream other than the one carrying the response to the request
+that set the log level.
+
+## Protocol Messages
+
+### Log Message Notifications
+
+Servers send log messages using `notifications/message` notifications:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/message",
+  "params": {
+    "level": "error",
+    "logger": "database",
+    "data": {
+      "error": "Connection failed",
+      "details": {
+        "host": "localhost",
+        "port": 5432
+      }
+    }
+  }
+}
+```
+
+## Error Handling
+
+If the `io.modelcontextprotocol/logLevel` value carried in a request's `_meta`
+is not a recognized [log level](#log-levels), the server **SHOULD** reject that
+request with a standard JSON-RPC error:
+
+* Invalid log level: `-32602` (Invalid params)
+* Internal errors: `-32603` (Internal error)
+
+## Implementation Considerations
+
+1. Servers **SHOULD**:
+   * Rate limit log messages
+   * Include relevant context in data field
+   * Use consistent logger names
+   * Remove sensitive information
+
+2. Clients **MAY**:
+   * Present log messages in the UI
+   * Implement log filtering/search
+   * Display severity visually
+   * Persist log messages
+
+## Security
+
+1. Log messages **MUST NOT** contain:
+   * Credentials or secrets
+   * Personal identifying information
+   * Internal system details that could aid attacks
+
+2. Implementations **SHOULD**:
+   * Rate limit messages
+   * Validate all data fields
+   * Control log access
+   * Monitor for sensitive content
+
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://modelcontextprotocol.io/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Pagination
+
+<div id="enable-section-numbers" />
+
+The Model Context Protocol (MCP) supports paginating list operations that may return
+large result sets. Pagination allows servers to yield results in smaller chunks rather
+than all at once.
+
+Pagination is especially important when connecting to external services over the
+internet, but also useful for local integrations to avoid performance issues with large
+data sets.
+
+<Note>
+  For brevity, the request examples on this page omit the `_meta` request
+  metadata (`io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientInfo`, and
+  `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
+  the required `_meta` fields; see
+  [`_meta`](/specification/2026-07-28/basic/index#meta).
+</Note>
+
+## Pagination Model
+
+Pagination in MCP uses an opaque cursor-based approach, instead of numbered pages.
+
+* The **cursor** is an opaque string token, representing a position in the result set
+* **Page size** is determined by the server, and clients **MUST NOT** assume a fixed page
+  size
+
+## Response Format
+
+Pagination starts when the server sends a **response** that includes:
+
+* The current page of results
+* An optional `nextCursor` field if more results exist
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": "123",
+  "result": {
+    "resultType": "complete",
+    "resources": [...],
+    "nextCursor": "eyJwYWdlIjogM30=",
+    "ttlMs": 300000,
+    "cacheScope": "public"
+  }
+}
+```
+
+## Request Format
+
+After receiving a cursor, the client can *continue* paginating by issuing a request
+including that cursor:
+
+```json theme={null}
+{
+  "jsonrpc": "2.0",
+  "id": "124",
+  "method": "resources/list",
+  "params": {
+    "cursor": "eyJwYWdlIjogMn0="
+  }
+}
+```
+
+## Pagination Flow
+
+```mermaid theme={null}
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Client->>Server: List Request (no cursor)
+    loop Pagination Loop
+      Server-->>Client: Page of results + nextCursor
+      Client->>Server: List Request (with cursor)
+    end
+```
+
+## Operations Supporting Pagination
+
+The following MCP operations support pagination:
+
+* `resources/list` - List available resources
+* `resources/templates/list` - List resource templates
+* `prompts/list` - List available prompts
+* `tools/list` - List available tools
+
+## Implementation Guidelines
+
+1. Servers **SHOULD**:
+   * Provide stable cursors
+   * Handle invalid cursors gracefully
+
+2. Clients **SHOULD**:
+   * Treat a missing `nextCursor` as the end of results
+   * Support both paginated and non-paginated flows
+
+3. Clients **MUST** treat cursors as opaque tokens:
+   * Don't make assumptions about cursor format
+   * Don't attempt to parse or modify cursors
+   * Don't make any determination based on cursor value other than whether a
+     non-null value was provided (e.g. an empty string is a valid cursor and
+     thus **MUST NOT** be treated as the end of results)
+
+## Error Handling
+
+Invalid cursors **SHOULD** result in an error with code -32602 (Invalid params).
+
+

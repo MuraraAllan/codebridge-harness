@@ -3,13 +3,13 @@
     "PreToolUse": [
       {
         "type": "command",
-        "command": "node .\\mcp-server\\src\\hooks\\emitReasoningProof.js",
+        "command": "node .\\mcp-server\\src\\hooks\\emit-reasoning-proof.js",
         "cwd": ".",
         "timeout": 5
       },
       {
         "type": "command",
-        "command": "node .\\mcp-server\\src\\hooks\\validateTool.js",
+        "command": "node .\\mcp-server\\src\\hooks\\validate-tool.js",
         "cwd": ".",
         "timeout": 5
       }
@@ -17,7 +17,7 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "node .\\mcp-server\\src\\hooks\\emitCommitContext.js",
+        "command": "node .\\mcp-server\\src\\hooks\\emit-commit-context.js",
         "cwd": ".",
         "timeout": 10
       }
@@ -25,7 +25,7 @@
     "UserPromptSubmit": [
       {
         "type": "command",
-        "command": "node .\\mcp-server\\src\\hooks\\emitReasoningProof.js",
+        "command": "node .\\mcp-server\\src\\hooks\\emit-reasoning-proof.js",
         "cwd": ".",
         "injectAsContext": true,
         "timeout": 5
@@ -48,13 +48,13 @@
     "PostToolUse": [
       {
         "type": "command",
-        "command": "node .\\mcp-server\\src\\hooks\\reportToolError.js",
+        "command": "node .\\mcp-server\\src\\hooks\\report-tool-error.js",
         "cwd": ".",
         "timeout": 5
       },
       {
         "type": "command",
-        "command": "node .\\mcp-server\\src\\hooks\\emitChangesDigraphNode.js",
+        "command": "node .\\mcp-server\\src\\hooks\\emit-changes-digraph-node.js",
         "cwd": ".",
         "timeout": 10
       }

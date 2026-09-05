@@ -12,6 +12,7 @@ export function handleErrorReport(args = {}) {
         text: JSON.stringify(report),
       },
     ],
+    structuredContent: report,
     isError: false,
   };
 }

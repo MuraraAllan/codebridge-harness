@@ -9,11 +9,18 @@ agents:
     react-router-harness,
     codebridge-harness,
     commit-context-harness,
+    codebridge-design-principle,
+    codebridge-react-javascript-typescript,
+    codebridge-ux-principle,
     codebridge-react-design-principle,
     codebridge-react-developer-principle,
     codebridge-react-ux-principle,
+    design-principle,
+    react-javascript-typescript,
+    ux-principle,
     recursive-processor,
     contextImageInterpret,
+    news-evaluator,
   ]
 ---
 

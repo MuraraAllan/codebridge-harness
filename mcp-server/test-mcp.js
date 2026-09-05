@@ -63,5 +63,9 @@ const title1 = generateDigraphTitle("edit_file", { filePath: "scripts/server.ts"
 assert(title1.fourWords.split(" ").length === 4, "Digraph title generates exactly 4 words");
 assert(title1.title.startsWith("Node: ") && title1.title.endsWith(":Vertice:WIP"), "Digraph title conforms to Node: 4Words:Vertice:WIP");
 
+// 5. Verify structuredContent outputs
+assert(err1.structuredContent && err1.structuredContent.category === "userIntervention", "errorReport returns conforming structuredContent");
+assert(commit1.structuredContent && commit1.structuredContent.summary === "feat: new mcp server", "commitContextChanges returns conforming structuredContent");
+
 console.log(`\nResults: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

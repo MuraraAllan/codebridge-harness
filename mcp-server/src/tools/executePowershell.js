@@ -35,6 +35,11 @@ export async function handleExecutePowershell({ command, scriptPath, args = [] }
       const output = (stdout + stderr).trim();
       resolve({
         content: [{ type: "text", text: output || "(no output)" }],
+        structuredContent: {
+          exitCode: code ?? 0,
+          output: output || "",
+          stderr: stderr.trim(),
+        },
         isError: code !== 0,
       });
     });

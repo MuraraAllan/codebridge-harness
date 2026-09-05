@@ -10,10 +10,15 @@ $mcpConfigPath = Join-Path $workspaceRoot ".vscode\mcp.json"
 $codexPluginManifestPath = Join-Path $workspaceRoot ".codex-plugin\plugin.json"
 $agentPluginManifestPath = Join-Path $workspaceRoot "plugin.json"
 $agentPluginMcpPath = Join-Path $workspaceRoot "mcp.json"
-$mcpServerPath = Join-Path $workspaceRoot "scripts\windows\serve-harness-mcp.ps1"
-$claudeInstructionsPath = Join-Path $workspaceRoot ".claude\CLAUDE.md"
-$claudeAgentPath = Join-Path $workspaceRoot ".claude\agents\codebridge-harness.md"
-$claudeHooksPath = Join-Path $workspaceRoot ".claude\settings.json"
+$mcpServerPath = Join-Path $workspaceRoot "mcp-server\src\server.js"
+$claudeDir = if (Test-Path -LiteralPath (Join-Path $workspaceRoot ".claude")) {
+    Join-Path $workspaceRoot ".claude"
+} else {
+    Join-Path $workspaceRoot "FUTURE.claude"
+}
+$claudeInstructionsPath = Join-Path $claudeDir "CLAUDE.md"
+$claudeAgentPath = Join-Path $claudeDir "agents\codebridge-harness.md"
+$claudeHooksPath = Join-Path $claudeDir "settings.json"
 $claudePluginManifestPath = Join-Path $workspaceRoot ".claude-plugin\plugin.json"
 $rootHooksPath = Join-Path $workspaceRoot "hooks.json"
 $pluginHooksPath = Join-Path $workspaceRoot "hooks\hooks.json"
@@ -25,29 +30,29 @@ $sharedInstructionsPath = Join-Path $workspaceRoot "AGENTS.md"
 $coordinatorAgentPath = Join-Path $workspaceRoot "agents\react-router-harness.agent.md"
 $workerAgentPath = Join-Path $workspaceRoot "agents\codebridge-harness-worker.agent.md"
 $commitContextAgentPath = Join-Path $workspaceRoot "agents\commit-context-harness.agent.md"
-$commitContextHookPath  = Join-Path $workspaceRoot "scripts\windows\emit-commit-context.ps1"
-$reasoningProofHookPath = Join-Path $workspaceRoot "scripts\windows\emit-reasoning-proof.ps1"
-$changesDigraphHookPath = Join-Path $workspaceRoot "scripts\windows\emit-changes-digraph-node.ps1"
+$commitContextHookPath  = Join-Path $workspaceRoot "mcp-server\src\hooks\emit-commit-context.js"
+$reasoningProofHookPath = Join-Path $workspaceRoot "mcp-server\src\hooks\emit-reasoning-proof.js"
+$changesDigraphHookPath = Join-Path $workspaceRoot "mcp-server\src\hooks\emit-changes-digraph-node.js"
 $recursiveAgentPath = Join-Path $workspaceRoot "agents\recursive-processor.agent.md"
 $principleAgentHookPaths = @{
-    "codebridge-react-design-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-design-principle-context.ps1"
-    "codebridge-react-developer-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-developer-principle-context.ps1"
-    "codebridge-react-ux-principle" = Join-Path $workspaceRoot "scripts\windows\inject-react-ux-principle-context.ps1"
+    "codebridge-design-principle" = Join-Path $workspaceRoot "mcp-server\src\hooks\inject-design-principle-context.js"
+    "codebridge-react-javascript-typescript" = Join-Path $workspaceRoot "mcp-server\src\hooks\inject-react-javascript-typescript-context.js"
+    "codebridge-ux-principle" = Join-Path $workspaceRoot "mcp-server\src\hooks\inject-ux-principle-context.js"
 }
 $principleAgentPaths = @(
-    (Join-Path $workspaceRoot "agents\codebridge-react-design-principle.agent.md"),
-    (Join-Path $workspaceRoot "agents\codebridge-react-developer-principle.agent.md"),
-    (Join-Path $workspaceRoot "agents\codebridge-react-ux-principle.agent.md")
+    (Join-Path $workspaceRoot "agents\codebridge-design-principle.agent.md"),
+    (Join-Path $workspaceRoot "agents\codebridge-react-javascript-typescript.agent.md"),
+    (Join-Path $workspaceRoot "agents\codebridge-ux-principle.agent.md")
 )
 $workspaceSettingsPath = Join-Path $workspaceRoot ".vscode\settings.json"
 $principleSkillPaths = @(
-    (Join-Path $workspaceRoot ".agents\skills\react-design-principle\SKILL.md"),
-    (Join-Path $workspaceRoot ".agents\skills\react-developer-principle\SKILL.md"),
-    (Join-Path $workspaceRoot ".agents\skills\react-ux-principle\SKILL.md")
+    (Join-Path $workspaceRoot ".agents\skills\design-principle\SKILL.md"),
+    (Join-Path $workspaceRoot ".agents\skills\react-javascript-typescript\SKILL.md"),
+    (Join-Path $workspaceRoot ".agents\skills\ux-principle\SKILL.md")
 )
 $imageAgentPath = Join-Path $workspaceRoot "agents\contextImageInterpret.agent.md"
 $imageCopilotAgentPath = Join-Path $workspaceRoot "com.github.copilot\agents\contextImageInterpret.agent.md"
-$imageClaudeAgentPath = Join-Path $workspaceRoot ".claude\agents\contextImageInterpret.md"
+$imageClaudeAgentPath = Join-Path $claudeDir "agents\contextImageInterpret.md"
 
 foreach ($path in @($instructionsPath, $userInstructionsPath, $agentPath, $mcpConfigPath, $codexPluginManifestPath, $agentPluginManifestPath, $agentPluginMcpPath, $mcpServerPath, $claudeInstructionsPath, $claudeAgentPath, $claudeHooksPath, $claudePluginManifestPath, $rootHooksPath, $pluginHooksPath, $copilotExtensionHooksPath, $copilotExtensionRulesPath, $claudeMcpPath, $pluginDefinitionPath, $sharedInstructionsPath, $coordinatorAgentPath, $workerAgentPath, $commitContextAgentPath, $commitContextHookPath, $reasoningProofHookPath, $changesDigraphHookPath, $recursiveAgentPath, $workspaceSettingsPath, $imageAgentPath, $imageCopilotAgentPath, $imageClaudeAgentPath) + $principleAgentHookPaths.Values + $principleSkillPaths + $principleAgentPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
@@ -122,7 +127,7 @@ if ($copilotRecursiveAgent -notmatch "deflusherDocRead" -or $copilotRecursiveAge
 }
 
 foreach ($path in $principleAgentPaths) {
-    if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*codebridge-react-.*-principle\r?$") {
+    if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*(codebridge-)?(design-principle|ux-principle|react-javascript-typescript|react-.*-principle)\r?$") {
         throw "Principle agent does not define the expected name: $path"
     }
 }
@@ -132,7 +137,7 @@ foreach ($agentName in $principleAgentHookPaths.Keys) {
     $principleAgent = Get-Content -Raw -LiteralPath $principleAgentPath
     $hookBaseName = [System.IO.Path]::GetFileNameWithoutExtension($principleAgentHookPaths[$agentName])
 
-    if ($principleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?$([regex]::Escape($hookBaseName))") {
+    if ($principleAgent -notmatch "(?ms)^hooks:.*?SessionStart.*?($([regex]::Escape($hookBaseName))|inject-design-principle-context|inject-ux-principle-context|inject-react-javascript-typescript-context)") {
         throw "Principle agent does not define its SessionStart context hook: $agentName"
     }
 }
@@ -143,7 +148,7 @@ if (-not $workspaceSettings.'chat.subagents.allowInvocationsFromSubagents') {
 }
 
 foreach ($path in $principleSkillPaths) {
-    if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*react-.*-principle\r?$") {
+    if ((Get-Content -Raw -LiteralPath $path) -notmatch "(?m)^name:\s*(react-.*-principle|design-principle|ux-principle|react-javascript-typescript)\r?$") {
         throw "Principle skill does not define the expected name: $path"
     }
 }
@@ -160,7 +165,7 @@ if ($codexPluginManifest.name -ne "codebridge-harness" -or $codexPluginManifest.
 if (-not $codexPluginManifest.mcpServers.'codebridge-harness') {
     throw "Codex plugin manifest does not define the codebridge-harness MCP server."
 }
-if ($codexPluginManifest.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
+if ($codexPluginManifest.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\mcp-server\src\server.js' -and $codexPluginManifest.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
     throw "Codex plugin manifest does not use PLUGIN_ROOT for the bundled MCP server."
 }
 if (-not $codexPluginManifest.interface.displayName -or -not $codexPluginManifest.interface.defaultPrompt) {
@@ -179,7 +184,7 @@ $agentPluginMcp = Get-Content -Raw -LiteralPath $agentPluginMcpPath | ConvertFro
 if ($agentPluginMcp.'$schema' -ne "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json" -or $agentPluginMcp.mcpServers.'codebridge-harness'.type -ne "stdio") {
     throw "Portable MCP configuration does not define the expected stdio codebridge-harness server."
 }
-if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
+if ($agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\mcp-server\src\server.js' -and $agentPluginMcp.mcpServers.'codebridge-harness'.args -notcontains '${PLUGIN_ROOT}\scripts\windows\serve-harness-mcp.ps1') {
     throw "Portable MCP configuration does not reference the bundled MCP server script."
 }
 
@@ -241,8 +246,8 @@ if (-not $copilotExtensionHooks.hooks.PreToolUse -or -not ($copilotExtensionHook
 }
 
 $processInfo = New-Object System.Diagnostics.ProcessStartInfo
-$processInfo.FileName = "powershell.exe"
-$processInfo.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$mcpServerPath`""
+$processInfo.FileName = "node.exe"
+$processInfo.Arguments = "`"$mcpServerPath`""
 $processInfo.RedirectStandardInput = $true
 $processInfo.RedirectStandardOutput = $true
 $processInfo.RedirectStandardError = $true

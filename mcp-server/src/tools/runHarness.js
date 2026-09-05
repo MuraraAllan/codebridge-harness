@@ -5,9 +5,12 @@ import { spawn } from "node:child_process";
 const HOOK_SCRIPT_MAP = {
   "emit-reasoning-proof.ps1": "emitReasoningProof.js",
   "inject-context-userinstructions.ps1": "injectContextUserinstructions.js",
-  "inject-react-developer-principle-context.ps1": "injectReactDeveloperPrinciple.js",
-  "inject-react-design-principle-context.ps1": "injectReactDesignPrinciple.js",
-  "inject-react-ux-principle-context.ps1": "injectReactUxPrinciple.js",
+  "inject-react-developer-principle-context.ps1": "injectReactJavascriptTypescript.js",
+  "inject-react-design-principle-context.ps1": "injectDesignPrinciple.js",
+  "inject-react-ux-principle-context.ps1": "injectUxPrinciple.js",
+  "inject-design-principle-context.ps1": "injectDesignPrinciple.js",
+  "inject-ux-principle-context.ps1": "injectUxPrinciple.js",
+  "inject-react-javascript-typescript-context.ps1": "injectReactJavascriptTypescript.js",
   "inject-context-image-interpret.ps1": "injectContextImageInterpret.js",
   "report-tool-error.ps1": "reportToolError.js",
   "validate-tool.ps1": "validateTool.js",
@@ -65,7 +68,9 @@ export async function handleRunHarness(workspaceRoot) {
     };
   }
 
-  const suite = JSON.parse(fs.readFileSync(suitePath, "utf8"));
+  const suite = JSON.parse(
+    fs.readFileSync(suitePath, "utf8").replace(/^\uFEFF/, "")
+  );
   const hooksDir = path.join(workspaceRoot, "mcp-server", "src", "hooks");
   const lines = [`Running Agent Hook Harness: ${suite.suiteName}`];
 
@@ -144,6 +149,11 @@ export async function handleRunHarness(workspaceRoot) {
         text: lines.join("\n"),
       },
     ],
+    structuredContent: {
+      passedCount,
+      failedCount,
+      output: lines.join("\n"),
+    },
     isError: failedCount > 0,
   };
 }

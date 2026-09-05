@@ -70,3 +70,11 @@ inject-react-developer-principle-context.ps1	src/hooks/inject-react-developer-pr
 inject-react-ux-principle-context.ps1	src/hooks/inject-react-ux-principle-context.js	Injects navigation and feedback guidance for codebridge-react-ux-principle.
 serve-harness-mcp.ps1	src/server.js	JSON-RPC MCP server over StdioServerTransport.
 test.ps1	src/hooks/test.js	Outputs test token 1234.
+
+3. Hook Visibility & Inspection Primitives (MCP Primitives)
+Although "Hooks" are an agent execution environment feature and not a native wire protocol primitive in MCP (which defines Prompts, Resources, and Tools), the server exposes all active hooks through standard MCP primitives:
+
+- Tool: `list_hooks` - Returns structured array of all registered hooks across PreToolUse, PostToolUse, SessionStart, and UserPromptSubmit with descriptions, timeouts, and commands.
+- Resource: `codebridge://hooks/active` - Renderable Markdown table detailing all 11 active workspace and agent hooks.
+- Resource: `codebridge://hooks/config` - Raw JSON configuration of workspace hooks from `hooks.json`.
+- Prompt: `inspect_hooks` - Pre-defined audit template allowing clients and users to verify hook configurations.

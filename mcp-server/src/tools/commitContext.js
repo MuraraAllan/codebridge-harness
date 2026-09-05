@@ -15,6 +15,7 @@ export function handleCommitContextChanges(args = {}) {
         text: JSON.stringify(result),
       },
     ],
+    structuredContent: result,
     isError: false,
   };
 }

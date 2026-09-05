@@ -7,6 +7,9 @@
   "skills": [
     ".agents/skills/codebridge-harness/SKILL.md",
     ".agents/skills/react-principles/SKILL.md",
+    ".agents/skills/design-principle/SKILL.md",
+    ".agents/skills/react-javascript-typescript/SKILL.md",
+    ".agents/skills/ux-principle/SKILL.md",
     ".agents/skills/react-design-principle/SKILL.md",
     ".agents/skills/react-developer-principle/SKILL.md",
     ".agents/skills/react-ux-principle/SKILL.md"

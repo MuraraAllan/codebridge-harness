@@ -7,7 +7,7 @@ agents: []
 hooks:
   SessionStart:
     - type: command
-      command: "node .\\mcp-server\\src\\hooks\\inject-react-design-principle-context.js"
+      command: "node .\\mcp-server\\src\\hooks\\inject-design-principle-context.js"
       cwd: "."
       timeout: 5
 ---

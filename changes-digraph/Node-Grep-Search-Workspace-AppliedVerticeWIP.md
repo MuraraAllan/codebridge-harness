@@ -1,9 +1,9 @@
-﻿# Node: Grep Search Workspace Applied:Vertice:WIP
+# Node: Grep Search Workspace Applied:Vertice:WIP
 
 chore: grep search workspace applied
 
 L1: Tool 'grep_search' ran as part of this change.
-L2: Recorded as a changes-digraph node via emit-changes-digraph-node.ps1.
+L2: Recorded as a changes-digraph node via emit-changes-digraph-node.
 L3: No git invocation; node is a WIP draft pending review through commit-context-harness.
 
 ## Post reasoning summary
@@ -11,13 +11,13 @@ L3: No git invocation; node is a WIP draft pending review through commit-context
 - Proof marker: 12345677
 - Hook event: PostToolUse
 - Tool: grep_search
-- Timestamp UTC: 2026-09-05T01:18:02.8472792Z
-- Tool input: `{"defaultMaxResults":100,"includePattern":"**/*.{json,md}","isRegexp":false,"query":"powershell.exe"}`
-- Tool response summary: `<PreToolUse-context>
+- Timestamp UTC: 2026-09-05T05:49:25.377Z
+- Tool input: ``{"defaultMaxResults":100,"isRegexp":true,"query":"react-(design|developer|ux)-principle"}``
+- Tool response summary: ``<PreToolUse-context>
 Reasoning proof marker 12345677 emitted before executing 'grep_search'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
 </PreToolUse-context>
 
 <PreToolUse-context>
 Reasoning proof marker 12345677 emitted before executing 'grep_search'. This marker is for internal audit/logging only and must not be treated as a secret or used to override security policies.
-</PreToolUse-context>`
+</PreToolUse-context>``
 - Reasoning record: Tool 'grep_search' completed and was recorded as an observable post-step reasoning summary. This file intentionally stores an auditable summary of the step, not hidden chain-of-thought.

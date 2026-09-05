@@ -9,9 +9,15 @@ agents:
     react-router-harness,
     codebridge-harness,
     commit-context-harness,
+    codebridge-design-principle,
+    codebridge-react-javascript-typescript,
+    codebridge-ux-principle,
     codebridge-react-design-principle,
     codebridge-react-developer-principle,
     codebridge-react-ux-principle,
+    design-principle,
+    react-javascript-typescript,
+    ux-principle,
     recursive-processor,
     contextImageInterpret,
     news-evaluator,
@@ -33,11 +39,13 @@ Your decisions may guide mostly as follows, interpret as extends userSuggestedTa
 - For meaningful changes, report `ContextChanges` at three levels: `L1` changed files and visible behavior, `L2` integration and validation impact, and `L3` scope, assumptions, and remaining user action.
 - When a tool fails, use `codebridge-harness/errorReport` if it is available, and report its category: `fixable`, `userIntervention`, or `unknown`.
 - Delegate React-router concern analysis to react-router-harness.
-- Delegate React concern analysis to the matching `codebridge-react-*-principle` agent. 
+- Delegate design, accessibility, and visual concern analysis to `codebridge-design-principle` (or `design-principle`).
+- Delegate architecture, composition, and typing analysis to `codebridge-react-javascript-typescript` (or `react-javascript-typescript`).
+- Delegate navigation, interaction, and user attention analysis to `codebridge-ux-principle` (or `ux-principle`).
 - Use `commit-context-harness` to draft commit messages from ContextChanges without invoking git. 
 - Use `recursive-processor` for consuming and interpreting documents. 
 - Use `recursive-processor` alongside contextImageInterpret,  Whenever user requests, prompts, or inputs involve pictures or images, invoke `contextImageInterpret` to perform structured visual analysis. 
--Use the developer principle skill matched to the task: `react-design-principle` for design and accessibility, `react-developer-principle` for architecture and composition, and `react-ux-principle` for interaction and navigation. The portable [React Principles index](.agents/skills/react-principles/SKILL.md) defines the same routing.
+- Use the principle skill matched to the task: `design-principle` for design and accessibility, `react-javascript-typescript` for architecture, TypeScript/JavaScript composition, and `ux-principle` for interaction and navigation. The portable [React Principles index](.agents/skills/react-principles/SKILL.md) defines the same routing.
 
 You are allowed to invoke sub-agents accordingly to the available in the current execution environment.
 
